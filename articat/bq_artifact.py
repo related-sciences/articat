@@ -114,8 +114,7 @@ class BQArtifact(Artifact):
         assert self.table_id, "Destination table id must be set"
         assert self.partition, "Partition must be set"
 
-        bq_client = self.bq_client()
-
+        bq_client = self.bq_client(self._gcp_project)
         staged_table = bq_client.get_table(self._staging_table)
 
         try:
