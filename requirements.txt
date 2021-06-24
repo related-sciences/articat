@@ -1,0 +1,15 @@
+# TODO: sort, trim
+fsspec
+pydantic==1.8.2
+fire
+gcsfs
+papermill==2.3.3
+dulwich
+google-cloud-datastore
+google-cloud-bigquery
+pyspark==3.1.2
+coloredlogs
+jupyterlab==2.2.0
+pandas==1.2.4
+pyarrow==4.0.1
+openpyxl
