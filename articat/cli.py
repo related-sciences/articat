@@ -1,10 +1,8 @@
-import importlib
 import logging
-import os
 import sys
 from datetime import date
 from pathlib import Path
-from typing import Any, Dict, Literal, Mapping, Optional
+from typing import Literal, Optional
 
 from articat.artifact import Artifact
 from articat.bq_artifact import BQArtifact
@@ -15,78 +13,30 @@ logger = logging.getLogger(__name__)
 
 
 class CLI:
-    """RS Catalog CLI interface"""
-
-    @staticmethod
-    def _get_task_class(task_name: str, task_module: str) -> Any:
-        task_module_path = Path(task_module)
-        if task_module_path.exists():
-            if task_module.endswith(".py"):
-                task_module = task_module.rstrip(".py")
-            task_module_o = importlib.import_module(
-                task_module.replace(os.path.sep, ".")
-            )
-        else:
-            task_module_o = importlib.import_module(task_module)
-
-        assert (
-            task_name in task_module_o.__dict__
-        ), f"Task {task_name} not found in {task_module}"
-        return getattr(task_module_o, task_name)
+    """Articat CLI interface"""
 
     @classmethod
     def open(
         cls,
         *,
-        name: Optional[str] = None,
-        module: Optional[str] = None,
         id: Optional[str] = None,
         partition: Optional[str] = None,
         version: Optional[str] = None,
-        task_params: Optional[Dict[str, Any]] = {},
     ) -> None:
-        """Open URL associated with the Artifact.
+        """
+        Open URL associated with the Artifact.
 
-        You can specify artifact by either:
-         * Task Module + Task Name
-         * Artifact ID
-
-        and optionally partition/version. If available using Task route is preferred.
-        Task module can be either path to the task module, or module string. Task Name
-        is the Task class name.
-        :param name: Task class name
-        :param module: Path or module of the Task
         :param id: Artifact ID
         :param partition: Optional partition (YYYY-MM-DD)
         :param version: Optional version
-        :param task_params: Optional task parameters
         """
-        if id is not None:
-            artifact = Artifact(id=id, partition=partition, version=version).fetch()
-            if hasattr(artifact, "files_pattern"):
-                artifact = FSArtifact.parse_obj(artifact)
-            elif hasattr(artifact, "table_id"):
-                artifact = BQArtifact.parse_obj(artifact)
-            else:
-                raise ValueError(f"Don't know how to open {artifact}")
+        artifact = Artifact(id=id, partition=partition, version=version).fetch()
+        if hasattr(artifact, "files_pattern"):
+            artifact = FSArtifact.parse_obj(artifact)
+        elif hasattr(artifact, "table_id"):
+            artifact = BQArtifact.parse_obj(artifact)
         else:
-            if name is None or module is None:
-                raise ValueError(
-                    "You must specify artifact id OR (task_name AND task_module)"
-                )
-            task_cls = cls._get_task_class(name, module)
-            assert isinstance(
-                task_params, Mapping
-            ), f"task_params should be a dict, it's `{task_params}`"
-            artifact = (
-                task_cls(
-                    version=version,
-                    partition=partition and date.fromisoformat(partition),
-                    **task_params,
-                )
-                .output_artifact()
-                .fetch()
-            )
+            raise ValueError(f"Don't know how to open {artifact}")
         logger.info(f"Opening artifact: {artifact.spec()} via {artifact.browser_url()}")
         artifact.open_browser()
 
