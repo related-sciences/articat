@@ -15,7 +15,7 @@ from dulwich import porcelain
 from dulwich.repo import Repo
 from fsspec import AbstractFileSystem
 
-from articat.artifact import ID
+from articat.artifact import ID, Artifact
 from articat.fs_artifact import FSArtifact
 from articat.pandas_utils import stringify_lists
 from articat.path_utils import fsspec_copyfile, get_root_path
@@ -157,12 +157,10 @@ def dummy_unsafe_cache(
     m.update(artifact.id.encode("UTF-8"))
     assert artifact.partition is not None
     m.update(
-        artifact.partition.strftime(FSArtifact._partition_str_format).encode("UTF-8")
+        artifact.partition.strftime(Artifact._partition_str_format).encode("UTF-8")
     )
     assert artifact.created is not None
-    m.update(
-        artifact.created.strftime(FSArtifact._partition_str_format).encode("UTF-8")
-    )
+    m.update(artifact.created.strftime(Artifact._partition_str_format).encode("UTF-8"))
     m.update((artifact.version and artifact.version.encode("UTF-8")) or b"")
     hex = m.hexdigest()
 

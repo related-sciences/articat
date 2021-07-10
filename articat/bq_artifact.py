@@ -3,7 +3,7 @@ import uuid
 from datetime import date, timedelta
 from functools import lru_cache
 from types import TracebackType
-from typing import Any, Optional, Type
+from typing import Any, ClassVar, Optional, Type
 
 from google.cloud import bigquery
 from google.cloud.exceptions import NotFound
@@ -32,7 +32,7 @@ class BQArtifact(Artifact):
     """Dev mode BQ dataset"""
     # _dataset: str = "rs_catalog"
     # Not yet supported: prod mode BQ dataset
-    _bq_partition_date_format: str = "%Y%m%d"
+    _bq_partition_date_format: ClassVar[str] = "%Y%m%d"
     """BQ uses this format to specify the day partitioning table"""
     _staging_table: Optional[str] = None
     """Staging table the user should write data to"""
@@ -78,7 +78,7 @@ class BQArtifact(Artifact):
         if not r.id:
             raise ValueError("ID must be set")
 
-        partition_str = r.created.strftime(r._partition_str_format)
+        partition_str = r.created.strftime(Artifact._partition_str_format)
         # NOTE: this style of assignment is required: https://github.com/samuelcolvin/pydantic/issues/655
         object.__setattr__(
             r,
@@ -86,7 +86,7 @@ class BQArtifact(Artifact):
             f"{r._gcp_project}.{r._tmp_dataset}.{r.id}_{partition_str}_{uuid.uuid4()}",
         )
 
-        partition_str = r.partition.strftime(r._bq_partition_date_format)
+        partition_str = r.partition.strftime(BQArtifact._bq_partition_date_format)
         if r.is_dev():
             r.table_id = f"{r._gcp_project}.{r._dev_dataset}.{r.id}${partition_str}"
         else:

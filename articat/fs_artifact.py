@@ -7,7 +7,7 @@ from functools import lru_cache
 from multiprocessing.pool import ThreadPool
 from pathlib import Path
 from types import TracebackType
-from typing import List, Optional, Type
+from typing import ClassVar, List, Optional, Type
 
 import fsspec
 from fsspec import AbstractFileSystem
@@ -15,7 +15,6 @@ from fsspec.implementations.local import LocalFileSystem
 from gcsfs import GCSFileSystem
 
 from articat.artifact import Artifact
-from articat.config import ArticatConfig
 
 logger = logging.getLogger(__name__)
 
@@ -36,30 +35,23 @@ class FSArtifact(Artifact):
                 fd.write("hello world")
     """
 
-    # This is the internal staging location, temp outputs get temporary stored there
-    # this bucket has 1 month retention period.
-    _tmp_path_prefix: str = ArticatConfig.gs_tmp_bucket
-    # This is the internal dev published location, all artifacts with id that
-    # starts with `_dev` get published here
-    _dev_path_prefix: str = ArticatConfig.gs_dev_bucket
-    # This is the internal published location, all published outputs live here,
-    # this bucket doesn't have retention period.
-    _path_prefix: str = ArticatConfig.gs_prod_bucket
-    # This is artifact specific file prefix within the
-    _file_prefix: Optional[str] = None
+    # Regex of the files/objects produced by this Artifact, needs to be
+    # set by the user
     files_pattern: Optional[str] = None
-    # represents the "root" of the artifacts file structure
+    # Represents the "root" of the artifacts file structure, populated
+    # automatically
     files_dir: Optional[str] = None
-    # Note: if it becomes necessary in the future we can add:
-    # files_patterns: Optional[List[str]] = None
-    _fs_scheme_regex = r"^.*?://"
+
+    # PRIVATE fields:
+    _file_prefix: Optional[str] = None
+    _fs_scheme_regex: ClassVar[str] = r"^.*?://"
 
     @property
     def staging_file_prefix(self) -> str:
         """
         This is your staging location for outputs. When you are done make sure to
         update `files_pattern` with a pattern/glob that includes all the outputs,
-        within the `file_prefix`.
+        within the `staging_file_prefix`.
         """
         if not self._file_prefix:
             raise ValueError(
@@ -84,15 +76,16 @@ class FSArtifact(Artifact):
         # and add it back
         if self.files_dir:
             return self.files_dir
+        # TODO: remove this code path
         # This is the legacy handling of the main_dir, where we gather
         # main dir from the files_pattern
         assert self.files_pattern is not None
         if self.is_dev():
-            no_prefix = self.files_pattern.replace(self._dev_path_prefix, "")
-            return self._dev_path_prefix + "/".join(no_prefix.split("/")[:4])
+            no_prefix = self.files_pattern.replace(self.config.fs_dev_prefix, "")
+            return self.config.fs_dev_prefix + "/".join(no_prefix.split("/")[:4])
         else:
-            no_prefix = self.files_pattern.replace(self._path_prefix, "")
-            return self._path_prefix + "/".join(no_prefix.split("/")[:3])
+            no_prefix = self.files_pattern.replace(self.config.fs_prod_prefix, "")
+            return self.config.fs_prod_prefix + "/".join(no_prefix.split("/")[:3])
 
     def joinpath(self, *parts: str) -> str:
         """Helper to easily construct paths within the Artifact"""
@@ -211,13 +204,17 @@ class FSArtifact(Artifact):
         if not self.id:
             raise ValueError("ID must be set")
 
-        partition_path = self.created.strftime(self._partition_str_format)
+        partition_path = self.created.strftime(Artifact._partition_str_format)
         if tmp:
-            return f"{self._tmp_path_prefix}/{self.id}/{partition_path}/{uuid.uuid4()}"
+            return (
+                f"{self.config.fs_tmp_prefix}/{self.id}/{partition_path}/{uuid.uuid4()}"
+            )
         elif self.is_dev():
-            return f"{self._dev_path_prefix}/{self.id}/{partition_path}/{uuid.uuid4()}"
+            return (
+                f"{self.config.fs_dev_prefix}/{self.id}/{partition_path}/{uuid.uuid4()}"
+            )
         else:
-            return f"{self._path_prefix}/{self.id}/{partition_path}/{uuid.uuid4()}"
+            return f"{self.config.fs_prod_prefix}/{self.id}/{partition_path}/{uuid.uuid4()}"
 
     @staticmethod
     def _get_protocol(path: Optional[str]) -> str:

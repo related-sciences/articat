@@ -36,7 +36,7 @@ def test_simple_happy_path_catalog(uid: ID) -> None:
     if r.files_pattern is None:
         pytest.fail("files_pattern should be set")
     else:
-        assert "final_output" in r.files_pattern
+        assert TestFSArtifact.config.fs_prod_prefix in r.files_pattern
         assert "ala" in Path(r.files_pattern).read_text()
         assert Path(r.files_pattern).parent.joinpath("_SUCCESS").exists()
         manifest_path = Path(r.files_pattern).parent.joinpath("_MANIFEST.json")
@@ -269,7 +269,7 @@ def test_catalog_lookup__cant_lookup_by_description_or_spark_schema(uid: ID) -> 
 def test_dev_mode(uid: ID) -> None:
     write_a_couple_of_partitions(f"_dev_{uid}", 1)
     r = TestCatalog.get(uid, partition=date.today(), dev=True)
-    assert "dev_output" in (r.files_pattern or "")
+    assert TestFSArtifact.config.fs_dev_prefix in (r.files_pattern or "")
     assert "final_output" not in (r.files_pattern or "final_output")
 
 

@@ -3,11 +3,13 @@ import typing
 from datetime import date, datetime
 from os import environ
 from types import TracebackType
-from typing import Any, Dict, List, Optional, Set, Tuple, Type, TypeVar, Union
+from typing import Any, ClassVar, Dict, List, Optional, Set, Tuple, Type, TypeVar, Union
 
 from google.cloud import datastore
 from google.cloud.datastore.helpers import entity_to_protobuf
 from pydantic import BaseModel, Extra, validator
+
+from articat.config import ArticatConfig, ConfigMixin
 
 if typing.TYPE_CHECKING:
     import pyspark
@@ -86,18 +88,21 @@ Partition = Union[datetime, date]
 T = TypeVar("T", bound="Artifact")
 
 
-class Artifact(BaseModel):  # type: ignore[misc]
-    """Represents a "partition" of a artifact/dataset group"""
+class Artifact(ConfigMixin, BaseModel):  # type: ignore[misc]
+    """Represents a single instance of a data Artifact"""
 
     class Config:
+        """Core Artifact pydantic config"""
+
+        extra = Extra.allow
         """
         Allow for extra properties to propagate into Artifact.
 
         This allows to parse any specialized Artifact as Artifact
         model, without "losing" extra properties.
         """
-
-        extra = Extra.allow
+        underscore_attrs_are_private = True
+        """Underscore attributes are private"""
 
     id: ID
     """Artifact ID, globally unique"""
@@ -111,8 +116,9 @@ class Artifact(BaseModel):  # type: ignore[misc]
     """Creation time"""
     _retire_entity: Optional[Tuple[ID, "Artifact"]] = None
     # Note: this field is used to carry retired entity, it's not serialized
-    _partition_str_format: str = "%Y%m%dT%H%M%S"
+    _partition_str_format: ClassVar[str] = "%Y%m%dT%H%M%S"
     # string format for partition used in paths etc
+    _config = ArticatConfig
 
     @validator("partition")  # type: ignore[misc]
     def partition_must_be_datetime(cls, v: Optional[Partition]) -> Optional[datetime]:
@@ -148,6 +154,7 @@ class Artifact(BaseModel):  # type: ignore[misc]
         return Catalog
 
     def _exclude_private_fields(self) -> Set[str]:
+        # TODO: remove since the config is in place
         return {f for f in self.__dict__ if f.startswith("_")}
 
     def _test_artifact_serialization(self) -> None:
@@ -157,7 +164,7 @@ class Artifact(BaseModel):  # type: ignore[misc]
 
     def is_dev(self) -> bool:
         """Returns True if this artifact is in dev mode, False otherwise"""
-        return Artifact._is_dev_mode(self.id)
+        return self._is_dev_mode(self.id)
 
     @staticmethod
     def _is_dev_mode(id: Optional[ID]) -> bool:

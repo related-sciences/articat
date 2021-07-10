@@ -9,6 +9,7 @@ from dulwich import porcelain
 from pytest import fixture
 
 from articat import utils
+from articat.artifact import Artifact
 from articat.fs_artifact import FSArtifact
 from articat.tests.utils import TestFSArtifact
 from articat.typing import PathType
@@ -22,7 +23,7 @@ from articat.utils import (
 
 def get_source_path_that_looks_like_path_from_catalog() -> Path:
     p = Path(
-        tempfile.mkdtemp(dir=TestFSArtifact._path_prefix, suffix="__ID__")
+        tempfile.mkdtemp(dir=TestFSArtifact.config.fs_prod_prefix, suffix="__ID__")
     ).joinpath("__PART__")
     p.mkdir(parents=True)
     return p
@@ -152,7 +153,7 @@ def test_cache__diff_artifact_id(caching_artifact: FSArtifact) -> None:
 def test_cache__diff_artifact_partition_version_created(
     monkeypatch: MonkeyPatch, caching_artifact: FSArtifact
 ) -> None:
-    monkeypatch.setattr(FSArtifact, "_partition_str_format", "%Y%m%dT%H%M%S%f")
+    monkeypatch.setattr(Artifact, "_partition_str_format", "%Y%m%dT%H%M%S%f")
     cache_dir = Path(tempfile.mkdtemp())
     b = dummy_unsafe_cache(caching_artifact, cache_dir)
     diff_partition = caching_artifact.copy(update={"partition": datetime.utcnow()})
@@ -188,10 +189,9 @@ def test_cache__download_failure_scenario(
     assert len(list(Path(cache_dir).glob("*"))) == 0
 
 
-@pytest.mark.xfail(reason="fix todo")
 def test_git__get_repo_curr_repo():
     repo_url, hash = get_repo_and_hash()
-    assert "TODO" in repo_url
+    assert "git@github.com:related-sciences/catalog.git" in repo_url
     assert len(hash) > 0
 
 

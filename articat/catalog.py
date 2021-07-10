@@ -3,13 +3,13 @@ from __future__ import annotations
 import logging
 from datetime import date, datetime
 from functools import lru_cache
-from typing import Iterable, Optional, Type, TypeVar, overload
+from typing import Iterable, Optional, Type, TypeVar, Union, overload
 
 from google.cloud import datastore
 from google.cloud.datastore import Client, Entity, Key
 
 from articat.artifact import ID, Artifact, Metadata, Partition, Version
-from articat.config import ArticatConfig
+from articat.config import ArticatConfig, ConfigMixin
 from articat.fs_artifact import FSArtifact
 from articat.typing import PandasDataFrame
 
@@ -18,24 +18,27 @@ logger = logging.getLogger(__name__)
 T = TypeVar("T", bound="Artifact")
 
 
-class Catalog:
+class Catalog(ConfigMixin):
     """RS Data Catalog"""
+
+    _config: Union[Type[ArticatConfig], ArticatConfig] = ArticatConfig
 
     @classmethod
     @lru_cache
     def _client(
-        cls, project: str = ArticatConfig.gcp_project, namespace: Optional[str] = None
+        cls, project: Optional[str] = None, namespace: Optional[str] = None
     ) -> datastore.Client:
+        project = project or cls.config.gcp_project
         return datastore.Client(project=project, namespace=namespace)
 
     @classmethod
-    def _dev_client(cls, project: str = ArticatConfig.gcp_project) -> datastore.Client:
+    def _dev_client(cls, project: Optional[str] = None) -> datastore.Client:
+        project = project or cls.config.gcp_project
         return cls._client(project=project, namespace="dev")
 
     @classmethod
-    def _retired_client(
-        cls, project: str = ArticatConfig.gcp_project
-    ) -> datastore.Client:
+    def _retired_client(cls, project: Optional[str] = None) -> datastore.Client:
+        project = project or cls.config.gcp_project
         return cls._client(project=project, namespace="retired")
 
     @classmethod

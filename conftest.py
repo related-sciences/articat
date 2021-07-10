@@ -1,9 +1,16 @@
+import logging
+import tempfile
 import uuid
 from pathlib import Path
+from typing import Any, Dict
 
 import pytest
 from _pytest.config import Config
 from _pytest.config.argparsing import Parser
+
+from articat.config import ArticatConfig
+
+logger = logging.getLogger(__name__)
 
 
 def pytest_addoption(parser: Parser) -> None:
@@ -41,3 +48,25 @@ def uid() -> str:
 @pytest.fixture(scope="function")
 def tmppath(tmpdir):
     return Path(tmpdir)
+
+
+def get_test_config() -> Dict[str, Dict[str, Any]]:
+    test_fs_prefix = Path(tempfile.mkdtemp())
+    logger.info(f"Test fs prefix: {test_fs_prefix.as_posix()}")
+    for d in ("tmp", "dev", "prod"):
+        test_fs_prefix.joinpath(d).mkdir(parents=True, exist_ok=True)
+    return {
+        "gcp": {"project": "test-gcp-project"},
+        "fs": {
+            "tmp_prefix": test_fs_prefix.joinpath("tmp"),
+            "dev_prefix": test_fs_prefix.joinpath("dev"),
+            "prod_prefix": test_fs_prefix.joinpath("prod"),
+        },
+        "bq": {
+            "prod_dataset": "BQ_TEST_PROD_DATASET",
+            "dev_dataset": "BQ_TEST_DEV_DATASET",
+        },
+    }
+
+
+ArticatConfig.register_config(config_paths=(), config_dict=get_test_config())

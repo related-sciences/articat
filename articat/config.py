@@ -1,8 +1,77 @@
+import logging
+from configparser import ConfigParser
+from typing import Any, Mapping, Sequence, Type, Union
+
+from articat.classproperty import classproperty
+
+logger = logging.getLogger(__name__)
+
+
 class ArticatConfig:
-    # TODO: temp workaround for the open-sourcing step
-    gcp_project: str = "UNSET"
-    bq_prod_dataset: str = "UNSET"
-    bq_dev_dataset: str = "UNSET"
-    gs_tmp_bucket: str = "UNSET"
-    gs_dev_bucket: str = "UNSET"
-    gs_prod_bucket: str = "UNSET"
+    default_config_paths = ["articat.cfg", "~/.config/articat/articat.cfg"]
+    _config: ConfigParser = ConfigParser()
+
+    def __init__(
+        self,
+        config_paths: Sequence[str] = [],
+        config_dict: Mapping[str, Mapping[str, Any]] = {},
+    ) -> None:
+        self._config = self._read_config(
+            config_paths=config_paths, config_dict=config_dict
+        )
+
+    @staticmethod
+    def _read_config(
+        config_paths: Sequence[str], config_dict: Mapping[str, Mapping[str, Any]]
+    ) -> ConfigParser:
+        config = ConfigParser()
+        read = config.read(config_paths)
+        if len(read) == 0:
+            logger.warning(f"No configuration files found, searched in {config_paths}")
+        config.read_dict(config_dict)
+        return config
+
+    @classmethod
+    def register_config(
+        cls,
+        config_paths: Sequence[str] = (),
+        config_dict: Mapping[str, Mapping[str, Any]] = {},
+    ) -> "Type[ArticatConfig]":
+        """TODO"""
+        cls._config = cls._read_config(
+            config_paths=config_paths, config_dict=config_dict
+        )
+        return cls
+
+    @classproperty
+    def gcp_project(self) -> str:
+        return self._config["gcp"]["project"]
+
+    @classproperty
+    def bq_prod_dataset(self) -> str:
+        return self._config["bq"]["prod_dataset"]
+
+    @classproperty
+    def bq_dev_dataset(self) -> str:
+        return self._config["bq"]["dev_dataset"]
+
+    @classproperty
+    def fs_tmp_prefix(self) -> str:
+        return self._config["fs"]["tmp_prefix"]
+
+    @classproperty
+    def fs_dev_prefix(self) -> str:
+        return self._config["fs"]["dev_prefix"]
+
+    @classproperty
+    def fs_prod_prefix(self) -> str:
+        return self._config["fs"]["prod_prefix"]
+
+
+class ConfigMixin:
+    _config: Union[Type[ArticatConfig], ArticatConfig]
+
+    @classproperty
+    def config(self) -> Union[Type[ArticatConfig], ArticatConfig]:
+        """Get Articat config object"""
+        return self._config

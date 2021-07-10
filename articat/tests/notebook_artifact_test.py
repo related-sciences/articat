@@ -1,11 +1,12 @@
 from pathlib import Path
+from typing import ClassVar
 
 import pytest
 from pytest import fixture
 
 from articat.artifact import ID
 from articat.notebook_artifact import NotebookArtifact
-from articat.tests.utils import TestCatalog, TestFSArtifact
+from articat.tests.utils import TestCatalog, TestFSArtifactMixin
 
 pytestmark = pytest.mark.datastore_emulated
 
@@ -17,10 +18,10 @@ def dummy_notebook(tmpdir: str):
     return FIXTURE_DIR.joinpath("dummy_notebook.ipynb")
 
 
-class TestNotebookArtifact(TestFSArtifact, NotebookArtifact):
+class TestNotebookArtifact(TestFSArtifactMixin, NotebookArtifact):
     """NotebookArtifact class for testing purposes"""
 
-    __test__ = False
+    __test__: ClassVar[bool] = False
 
 
 def test_notebook_artifact(uid: ID, dummy_notebook: Path) -> None:
