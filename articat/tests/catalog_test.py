@@ -19,9 +19,9 @@ from dateutil.tz import UTC
 # pytest --datastore_emulated
 from articat.artifact import ID, Artifact, Metadata
 from articat.fs_artifact import FSArtifact
-from articat.path_utils import get_root_path
 from articat.tests.utils import TestCatalog, TestFSArtifact
-from articat.utils import get_relative_call_site
+from articat.utils.path_utils import get_root_path
+from articat.utils.utils import get_relative_call_site
 
 pytestmark = pytest.mark.datastore_emulated
 

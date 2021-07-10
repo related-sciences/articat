@@ -4,7 +4,7 @@ from typing import Optional
 
 import fsspec
 
-from articat.typing import PathType
+from articat.utils.typing import PathType
 
 
 def to_pathlib(path: PathType) -> Path:
@@ -17,7 +17,7 @@ def to_pathlib(path: PathType) -> Path:
 
 def get_root_path() -> Path:
     """Return root of the articat project"""
-    return Path(__file__).parent.parent.absolute()
+    return Path(__file__).parent.parent.parent.absolute()
 
 
 def fsspec_copyfile(

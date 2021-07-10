@@ -15,8 +15,8 @@ from fsspec import AbstractFileSystem
 
 from articat.artifact import Artifact
 from articat.fs_artifact import FSArtifact
-from articat.path_utils import get_root_path
-from articat.typing import PathType
+from articat.utils.path_utils import get_root_path
+from articat.utils.typing import PathType
 
 logger = logging.getLogger(__name__)
 

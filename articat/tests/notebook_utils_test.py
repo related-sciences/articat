@@ -4,7 +4,7 @@ from pathlib import Path
 from pytest import fixture
 
 from articat.fs_artifact import FSArtifact
-from articat.notebook_utils import papermill_notebook
+from articat.utils.notebook_utils import papermill_notebook
 
 FIXTURE_DIR = Path(__file__).resolve().parent.joinpath("test_files")
 

@@ -2,7 +2,7 @@ import logging
 from configparser import ConfigParser
 from typing import Any, Mapping, Optional, Sequence, Type, Union
 
-from articat.classproperty import classproperty
+from articat.utils.classproperty import classproperty
 
 logger = logging.getLogger(__name__)
 

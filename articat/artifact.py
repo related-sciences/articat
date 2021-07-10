@@ -190,7 +190,7 @@ class Artifact(ConfigMixin, BaseModel):  # type: ignore[misc]
         function only works when called from partitioned/versioned.
         """
         try:
-            from articat.utils import get_relative_call_site
+            from articat.utils.utils import get_relative_call_site
 
             call_site = get_relative_call_site(frames_back=3)
         except Exception:
@@ -207,7 +207,7 @@ class Artifact(ConfigMixin, BaseModel):  # type: ignore[misc]
 
     def __add_git_info(self) -> None:
         try:
-            from articat.utils import get_repo_and_hash
+            from articat.utils.utils import get_repo_and_hash
 
             repo_url, hash = get_repo_and_hash()
         except Exception as exc:

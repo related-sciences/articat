@@ -7,12 +7,12 @@ from _pytest.monkeypatch import MonkeyPatch
 from dulwich import porcelain
 from pytest import fixture
 
-from articat import utils
 from articat.artifact import Artifact
 from articat.fs_artifact import FSArtifact
 from articat.tests.utils import TestFSArtifact
-from articat.typing import PathType
-from articat.utils import download_artifact, dummy_unsafe_cache, get_repo_and_hash
+from articat.utils import utils
+from articat.utils.typing import PathType
+from articat.utils.utils import download_artifact, dummy_unsafe_cache, get_repo_and_hash
 
 
 def get_source_path_that_looks_like_path_from_catalog() -> Path:

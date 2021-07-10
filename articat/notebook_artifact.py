@@ -4,9 +4,9 @@ import fsspec
 from gcsfs import GCSFileSystem
 
 from articat.fs_artifact import FSArtifact
-from articat.notebook_utils import papermill_notebook
-from articat.path_utils import fsspec_copyfile, to_pathlib
-from articat.typing import PathType
+from articat.utils.notebook_utils import papermill_notebook
+from articat.utils.path_utils import fsspec_copyfile, to_pathlib
+from articat.utils.typing import PathType
 
 
 class NotebookArtifact(FSArtifact):
