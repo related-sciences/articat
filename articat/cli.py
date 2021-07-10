@@ -6,13 +6,10 @@ from datetime import date
 from pathlib import Path
 from typing import Any, Dict, Literal, Mapping, Optional
 
-import fire
-
 from articat.artifact import Artifact
 from articat.bq_artifact import BQArtifact
 from articat.catalog import Catalog
 from articat.fs_artifact import FSArtifact
-from articat.logging_utils import setup_console_logging
 
 logger = logging.getLogger(__name__)
 
@@ -170,9 +167,3 @@ class CLI:
             artifact.stage(Path(local_path))
             artifact.metadata.description = description
         return artifact
-
-
-if __name__ == "__main__":
-    setup_console_logging()
-
-    fire.Fire(CLI)

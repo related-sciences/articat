@@ -1,0 +1,14 @@
+#!/usr/bin/env python
+
+if __name__ == "__main__":
+    import logging
+    import os
+
+    import fire
+
+    from articat.cli import CLI
+    from articat.config import ArticatConfig
+
+    logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))
+    ArticatConfig.register_config()
+    fire.Fire(CLI)

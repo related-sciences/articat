@@ -1,6 +1,6 @@
 import logging
 from configparser import ConfigParser
-from typing import Any, Mapping, Sequence, Type, Union
+from typing import Any, Mapping, Optional, Sequence, Type, Union
 
 from articat.classproperty import classproperty
 
@@ -34,10 +34,13 @@ class ArticatConfig:
     @classmethod
     def register_config(
         cls,
-        config_paths: Sequence[str] = (),
+        config_paths: Optional[Sequence[str]] = None,
         config_dict: Mapping[str, Mapping[str, Any]] = {},
     ) -> "Type[ArticatConfig]":
         """TODO"""
+        config_paths = (
+            config_paths if config_paths is not None else cls.default_config_paths
+        )
         cls._config = cls._read_config(
             config_paths=config_paths, config_dict=config_dict
         )

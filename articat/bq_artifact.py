@@ -9,7 +9,6 @@ from google.cloud import bigquery
 from google.cloud.exceptions import NotFound
 
 from articat.artifact import ID, Arbitrary, Artifact, Partition, Version
-from articat.config import ArticatConfig
 
 logger = logging.getLogger(__name__)
 
@@ -24,14 +23,6 @@ class BQArtifact(Artifact):
     use BigQuery and what works best.
     """
 
-    _gcp_project: str = ArticatConfig.gcp_project
-    """GCP project for the BQ artifact"""
-    _tmp_dataset: str = ArticatConfig.bq_prod_dataset
-    """Staging BQ dataset"""
-    _dev_dataset: str = ArticatConfig.bq_dev_dataset
-    """Dev mode BQ dataset"""
-    # _dataset: str = "rs_catalog"
-    # Not yet supported: prod mode BQ dataset
     _bq_partition_date_format: ClassVar[str] = "%Y%m%d"
     """BQ uses this format to specify the day partitioning table"""
     _staging_table: Optional[str] = None
@@ -83,19 +74,19 @@ class BQArtifact(Artifact):
         object.__setattr__(
             r,
             "_staging_table",
-            f"{r._gcp_project}.{r._tmp_dataset}.{r.id}_{partition_str}_{uuid.uuid4()}",
+            f"{r.config.gcp_project}.{r.config.fs_tmp_prefix}.{r.id}_{partition_str}_{uuid.uuid4()}",
         )
 
         partition_str = r.partition.strftime(BQArtifact._bq_partition_date_format)
         if r.is_dev():
-            r.table_id = f"{r._gcp_project}.{r._dev_dataset}.{r.id}${partition_str}"
+            r.table_id = f"{r.config.gcp_project}.{r.config.bq_dev_dataset}.{r.id}${partition_str}"
         else:
             logger.warning(
                 "Production BigQuery artifacts are not supported yet, data will be saved to "
-                f"the development dataset: {r._dev_dataset}."
+                f"the development dataset: {r.config.bq_dev_dataset}."
             )
-            # r.table_id = f"{r._gcp_project}.{r._dataset}.{r.id}${partition_str}"
-            r.table_id = f"{r._gcp_project}.{r._dev_dataset}.{r.id}${partition_str}"
+            # r.table_id = f"{r.config.gcp_project}.{r._dataset}.{r.id}${partition_str}"
+            r.table_id = f"{r.config.gcp_project}.{r.config.bq_dev_dataset}.{r.id}${partition_str}"
         logger.debug(f"Final data of {r.spec()} will end up in {r.table_id}")
         return r
 
@@ -114,7 +105,8 @@ class BQArtifact(Artifact):
         assert self.table_id, "Destination table id must be set"
         assert self.partition, "Partition must be set"
 
-        bq_client = self.bq_client(self._gcp_project)
+        bq_client = self.bq_client(self.config.gcp_project)
+
         staged_table = bq_client.get_table(self._staging_table)
 
         try:
