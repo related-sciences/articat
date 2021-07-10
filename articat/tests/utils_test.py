@@ -2,7 +2,6 @@ import tempfile
 from datetime import datetime
 from pathlib import Path
 
-import pandas as pd
 import pytest
 from _pytest.monkeypatch import MonkeyPatch
 from dulwich import porcelain
@@ -13,12 +12,7 @@ from articat.artifact import Artifact
 from articat.fs_artifact import FSArtifact
 from articat.tests.utils import TestFSArtifact
 from articat.typing import PathType
-from articat.utils import (
-    download_artifact,
-    dummy_unsafe_cache,
-    get_repo_and_hash,
-    stage_dev_data,
-)
+from articat.utils import download_artifact, dummy_unsafe_cache, get_repo_and_hash
 
 
 def get_source_path_that_looks_like_path_from_catalog() -> Path:
@@ -130,7 +124,7 @@ def test_cache__happy_path(caching_artifact: FSArtifact) -> None:
 def test_cache__env_var(monkeypatch: MonkeyPatch, caching_artifact: FSArtifact) -> None:
     cache_dir = tempfile.mkdtemp()
     diff_cache_dir = tempfile.mkdtemp()
-    monkeypatch.setenv("RS_CACHE_DIR", cache_dir)
+    monkeypatch.setenv("ARTICAT_CACHE_DIR", cache_dir)
     b = dummy_unsafe_cache(caching_artifact, diff_cache_dir)
     assert diff_cache_dir in b
     assert cache_dir not in b
@@ -219,37 +213,3 @@ def test_git__dirty_tree():
     porcelain.commit(r, message="commit some file")
     _, hash = get_repo_and_hash(repo_dir)
     assert "DIRTY" not in hash
-
-
-@pytest.mark.datastore_emulated
-def test_stage_dev_data(uid):
-    foo = pd.DataFrame({"c1": [1, 2, 3], "c2": [4, 5, 6]})
-    bar = pd.DataFrame({"b1": [7, 8, 9], "b2": [10, 11, 12]})
-    with pytest.raises(ValueError, match="Dev artifact id must start"):
-        stage_dev_data(
-            uid,
-            "test artifact",
-            excel_dump_pattern="bar",
-            artifact_cls=TestFSArtifact,
-            foo=foo,
-            bar=bar,
-        )
-    a = stage_dev_data(
-        f"_dev_{uid}",
-        "test artifact",
-        excel_dump_pattern="bar",
-        artifact_cls=TestFSArtifact,
-        foo=foo,
-        bar=bar,
-    )
-    res = Path(a.main_dir)
-    assert res.joinpath("bar.snappy.parquet").exists()
-    assert res.joinpath("foo.snappy.parquet").exists()
-    pd.testing.assert_frame_equal(
-        pd.read_parquet(res.joinpath("bar.snappy.parquet")), bar
-    )
-    pd.testing.assert_frame_equal(
-        pd.read_parquet(res.joinpath("foo.snappy.parquet")), foo
-    )
-    xlsxs = list(res.glob("*.xlsx"))
-    assert len(xlsxs) == 1

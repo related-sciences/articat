@@ -3,23 +3,19 @@ import logging
 import os
 import re
 import shutil
-import tempfile
 import time
 from hashlib import md5
 from pathlib import Path
-from typing import Optional, Tuple, Type
+from typing import Optional, Tuple
 
 import fsspec
-import pandas as pd
 from dulwich import porcelain
 from dulwich.repo import Repo
 from fsspec import AbstractFileSystem
 
-from articat.artifact import ID, Artifact
+from articat.artifact import Artifact
 from articat.fs_artifact import FSArtifact
-from articat.pandas_utils import stringify_lists
-from articat.path_utils import fsspec_copyfile, get_root_path
-from articat.py_utils import lazy
+from articat.path_utils import get_root_path
 from articat.typing import PathType
 
 logger = logging.getLogger(__name__)
@@ -122,8 +118,8 @@ def dummy_unsafe_cache(
     This is an unsafe implementation of local FS caching for FSArtifacts.
 
     Context:
-    We don't want to build caching into jia, since it's a hard problem to
-    solve properly. It as a helper method, and this should be used at your
+    We don't want to build caching into articat, since it's a hard problem to
+    solve properly. This is a helper method, and should be used at your
     own risk (and definitely not in the production environment).
 
     Example:
@@ -135,17 +131,17 @@ def dummy_unsafe_cache(
 
     :param artifact: FSArtifact to return data for
     :param cache_dir: cache dir location, can be provided either by this argument
-        or environment variable RS_CACHE_DIR. Argument takes precedence over
+        or environment variable ARTICAT_CACHE_DIR. Argument takes precedence over
         environment variable.
     :return: string representing the local version of `artifact.files_pattern`
     """
     if cache_dir is None:
-        cache_dir = os.environ.get("RS_CACHE_DIR")
+        cache_dir = os.environ.get("ARTICAT_CACHE_DIR")
         if cache_dir is not None:
             cache_dir = Path(cache_dir)
         else:
             raise ValueError(
-                "No cache_dir set and no RS_CACHE_DIR env variable, don't know where to store cache"
+                "No cache_dir set and no ARTICAT_CACHE_DIR env variable, don't know where to store cache"
             )
     assert cache_dir is not None
     cache_dir_path: Path = Path(cache_dir) if isinstance(cache_dir, str) else cache_dir
@@ -186,77 +182,3 @@ def dummy_unsafe_cache(
                 raise ValueError(
                     f"Cache download failed, make sure {cache_entry.as_posix()} does not exits!"
                 ) from e
-
-
-def stage_dev_data(
-    aid: ID,
-    desc: str,
-    excel_dump_pattern: Optional[str] = None,
-    artifact_cls: Type[FSArtifact] = FSArtifact,
-    **pd_datasets: pd.DataFrame,
-) -> FSArtifact:
-    """
-    Dumps development data, to ease data sharing etc. Dumps arbitrary number of Pandas Dataframes
-    to the dev Catalog. You can also choose to allow certain Dataframes to be written to Excel
-    file. Keep in mind that development data is deleted after 30 days.
-    :param aid: artifact id, must start with _dev
-    :param desc: artifact description
-    :param excel_dump_pattern: "allow pattern" to select dataframes for Excel dump, use ".*" to select all.
-    :param pd_datasets: kwargs of the Dataframes, keys will be the file names (or sheet names in Excel).
-    :param artifact_cls: artifact class, right now used for tests.
-    :return: artifact
-
-    Example:
-
-    ```
-    stage_dev_data("_dev_abbvie_progressions",
-                   "Dump progressions",
-                   excel_dump_allow_re="progress_stats",
-                   progress_stats=risk_ratio_df,
-                   pharma_genetics=combined_df)
-    ```
-
-    Will dump two Pandas Dataframes, and one of them in Excel.
-    """
-    if not aid.startswith("_dev"):
-        raise ValueError("Dev artifact id must start with `_dev`")
-    if len(pd_datasets) == 0:
-        raise ValueError("Must provide at least one pandas dataframe to stage")
-    if not desc:
-        raise ValueError("You must provide description")
-    with artifact_cls.partitioned(aid) as a:
-        # excel writer fails if there is no data written, so we wrap it in a lazy
-        # thus only create it when it's needed
-        # the type ignore is needed due to mypy bug: https://github.com/python/mypy/issues/9590
-
-        def create_writer() -> Tuple[pd.ExcelWriter, PathType]:
-            path = tempfile.mktemp(suffix=".xlsx")
-            return (
-                pd.ExcelWriter(path=path, writer="openpyxl"),
-                path,
-            )
-
-        lz_xlsx_writer = lazy(create_writer)
-        for n, df in pd_datasets.items():
-            df.to_parquet(
-                f"{a.staging_file_prefix}/{n}.snappy.parquet",
-                compression="snappy",
-                index=False,
-            )
-            if excel_dump_pattern and re.compile(excel_dump_pattern).match(n):
-                df = df.applymap(stringify_lists)
-                df.to_excel(
-                    lz_xlsx_writer()[0], freeze_panes=(1, 0), index=False, sheet_name=n
-                )
-        if excel_dump_pattern and any(
-            re.compile(excel_dump_pattern).match(n) for n in pd_datasets.keys()
-        ):
-            writer, path = lz_xlsx_writer()
-            writer.close()
-            # py3.9 has removeprefix, we should use that when we can
-            xlsx_filename = aid[6:] if aid.startswith("_dev_") else aid[5:]
-            fsspec_copyfile(str(path), f"{a.staging_file_prefix}/{xlsx_filename}.xlsx")
-        a.metadata.description = desc
-    files = "\n".join(fsspec.open(a.main_dir).fs.glob(a.files_pattern))
-    logger.warning(f"Data dumped:\n{files}")
-    return a

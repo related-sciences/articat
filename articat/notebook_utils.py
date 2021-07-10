@@ -3,7 +3,7 @@ import tempfile
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, Mapping
+from typing import Any, Dict, Mapping, cast
 
 from google.cloud.bigquery._helpers import _datetime_to_json
 from nbconvert import HTMLExporter
@@ -12,7 +12,6 @@ from papermill import execute_notebook
 from papermill.translators import PythonTranslator, papermill_translators
 
 from articat.artifact import Artifact
-from articat.check import check_type
 
 logger = logging.getLogger(__name__)
 
@@ -89,13 +88,13 @@ class RSNBJsonEncoder(nbjson.BytesEncoder):  # type: ignore[misc]
             # NOTE: we really only need the spec, it's assumed that
             #       the notebook will call fetch() on the artifacts
             #       to retrieve metadata at the runtime.
-            return check_type(super().encode(obj.spec()), str)
+            return cast(str, super().encode(obj.spec()))
         elif isinstance(obj, datetime):
-            return check_type(_datetime_to_json(obj), str)
+            return cast(str, _datetime_to_json(obj))
         elif isinstance(obj, Mapping):
-            return check_type(super().encode(dict(obj)), str)
+            return cast(str, super().encode(dict(obj)))
         else:
-            return check_type(super().default(obj), str)
+            return cast(str, super().default(obj))
 
 
 nbjson.BytesEncoder = RSNBJsonEncoder
@@ -130,7 +129,7 @@ class RSPythonTranslator(PythonTranslator):  # type: ignore[misc]
         if isinstance(val, Artifact):
             return cls.translate_artifact(val)
         else:
-            return check_type(super().translate(val), str)
+            return cast(str, super().translate(val))
 
 
 papermill_translators.register("python", RSPythonTranslator)

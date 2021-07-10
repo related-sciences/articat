@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 from datetime import date, datetime
 from functools import lru_cache
-from typing import Iterable, Optional, Type, TypeVar, Union, overload
+from typing import Any, Iterable, Optional, Type, TypeVar, Union, overload
 
 from google.cloud import datastore
 from google.cloud.datastore import Client, Entity, Key
@@ -11,7 +11,6 @@ from google.cloud.datastore import Client, Entity, Key
 from articat.artifact import ID, Artifact, Metadata, Partition, Version
 from articat.config import ArticatConfig, ConfigMixin
 from articat.fs_artifact import FSArtifact
-from articat.typing import PandasDataFrame
 
 logger = logging.getLogger(__name__)
 
@@ -364,14 +363,18 @@ class Catalog(ConfigMixin):
         dev: bool = False,
         limit: Optional[int] = None,
         include_arbitrary: bool = True,
-    ) -> PandasDataFrame:
+    ) -> Any:
         """
         Return DataFrame representation of the Catalog.
 
         Use `dev=True` to get the development view of the Catalog. Use `limit` to reduce the
         size of the output. `include_arbitrary=False` to avoid expanding arbitrary field.
         """
-        import pandas as pd
+        try:
+            import pandas as pd
+        except ImportError:
+            logger.exception("to_dataframe requires pandas, install pandas ...")
+            raise
 
         exclude = None if include_arbitrary else dict(metadata=dict(arbitrary=...))
         catalog_dicts = list(
