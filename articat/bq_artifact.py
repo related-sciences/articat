@@ -9,6 +9,7 @@ from google.cloud import bigquery
 from google.cloud.exceptions import NotFound
 
 from articat.artifact import ID, Arbitrary, Artifact, Partition, Version
+from articat.config import ArticatConfig
 
 logger = logging.getLogger(__name__)
 
@@ -41,13 +42,25 @@ class BQArtifact(Artifact):
         return bigquery.Client(project=project, **kwargs)
 
     @classmethod
-    def versioned(cls, id: ID, version: Version, *, dev: bool = False) -> "BQArtifact":
+    def versioned(
+        cls,
+        id: ID,
+        version: Version,
+        *,
+        dev: bool = False,
+        config: Optional[ArticatConfig] = None,
+    ) -> "BQArtifact":
         """Versioned BQ artifacts are not supported"""
         raise NotImplementedError("Versioned BigQuery Artifact is not supported")
 
     @classmethod
     def partitioned(
-        cls, id: ID, partition: Optional[Partition] = date.today(), *, dev: bool = False
+        cls,
+        id: ID,
+        partition: Optional[Partition] = date.today(),
+        *,
+        dev: bool = False,
+        config: Optional[ArticatConfig] = None,
     ) -> "BQArtifact":
         """Partitioned BQ artifact, the partition must be a date"""
         assert partition is not None
@@ -56,7 +69,7 @@ class BQArtifact(Artifact):
             raise ValueError("Partition resolution for BQ artifact must be a day")
         return (
             super()
-            .partitioned(id=id, partition=partition, dev=dev)
+            .partitioned(id=id, partition=partition, dev=dev, config=config)
             ._best_effort_tag_with_call_site()
         )
 
