@@ -1,0 +1,2 @@
+prune .github
+exclude .coveragerc .gitignore .pre-commit-config.yaml conftest.py requirements-dev.txt requirements.txt
