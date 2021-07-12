@@ -1,4 +1,7 @@
 # articat
+[![CI](https://github.com/related-sciences/articat/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/related-sciences/articat/actions/workflows/build.yml)
+[![PYPI](https://img.shields.io/pypi/v/articat.svg)](https://pypi.org/project/articat/)
+
 Minimal metadata catalog to store and retrieve metadata about data artifacts.
 
 High level features:
