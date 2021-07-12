@@ -118,7 +118,7 @@ class Artifact(ConfigMixin, BaseModel):  # type: ignore[misc]
     # Note: this field is used to carry retired entity, it's not serialized
     _partition_str_format: ClassVar[str] = "%Y%m%dT%H%M%S"
     # string format for partition used in paths etc
-    _config = ArticatConfig
+    _config: Union[ArticatConfig, Type[ArticatConfig]] = ArticatConfig
 
     @validator("partition")  # type: ignore[misc]
     def partition_must_be_datetime(cls, v: Optional[Partition]) -> Optional[datetime]:
@@ -231,16 +231,42 @@ class Artifact(ConfigMixin, BaseModel):  # type: ignore[misc]
         partition: Optional[Partition] = None,
         *,
         dev: bool = False,
+        config: Optional[ArticatConfig] = None,
     ) -> T:
-        """CTOR for partitioned artifact"""
+        """
+        CTOR for a partitioned Artifact.
+
+        :param id: Artifact ID.
+        :param partition: Artifact partition.
+        :param dev: mode mode flag.
+        :param config: optional custom config for this Artifact.
+        """
         a = cls(id=Artifact._enforce_dev_mode(id, dev), partition=partition)
+        if config is not None:
+            a._config = config
         assert isinstance(a, Artifact)
         return a._best_effort_tag_with_call_site()
 
     @classmethod
-    def versioned(cls: Type[T], id: ID, version: Version, *, dev: bool = False) -> T:
-        """CTOR for versioned artifact"""
+    def versioned(
+        cls: Type[T],
+        id: ID,
+        version: Version,
+        *,
+        dev: bool = False,
+        config: Optional[ArticatConfig] = None,
+    ) -> T:
+        """
+        CTOR for a versioned Artifact.
+
+        :param id: Artifact ID.
+        :param version: Artifact version.
+        :param dev: mode mode flag.
+        :param config: optional custom config for this Artifact.
+        """
         a = cls(id=Artifact._enforce_dev_mode(id, dev), version=version)
+        if config is not None:
+            a._config = config
         assert isinstance(a, Artifact)
         return a._best_effort_tag_with_call_site()
 
