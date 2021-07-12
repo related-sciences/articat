@@ -10,8 +10,8 @@ logger = logging.getLogger(__name__)
 
 class ArticatConfig:
     default_config_paths = [
-        Path.cwd().joinpath("articat.cfg").as_posix(),
         Path.home().joinpath(".config", "articat", "articat.cfg").as_posix(),
+        Path.cwd().joinpath("articat.cfg").as_posix(),
     ]
     _config: ConfigParser = ConfigParser()
 
