@@ -1,5 +1,6 @@
 import logging
 from configparser import ConfigParser
+from pathlib import Path
 from typing import Any, Mapping, Optional, Sequence, Type, Union
 
 from articat.utils.classproperty import classproperty
@@ -8,7 +9,10 @@ logger = logging.getLogger(__name__)
 
 
 class ArticatConfig:
-    default_config_paths = ["articat.cfg", "~/.config/articat/articat.cfg"]
+    default_config_paths = [
+        Path.cwd().joinpath("articat.cfg").as_posix(),
+        Path.home().joinpath(".config", "articat", "articat.cfg").as_posix(),
+    ]
     _config: ConfigParser = ConfigParser()
 
     def __init__(
