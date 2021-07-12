@@ -3,7 +3,7 @@ fsspec
 fire
 gcsfs
 dulwich
-google-cloud-datastore
-google-cloud-bigquery
+google-cloud-datastore==1.15.0
+google-cloud-bigquery==2.13.1
 jupyterlab==2.2.0
 papermill==2.3.3
