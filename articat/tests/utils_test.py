@@ -185,7 +185,7 @@ def test_cache__download_failure_scenario(
 
 def test_git__get_repo_curr_repo():
     repo_url, hash = get_repo_and_hash()
-    assert "git@github.com:related-sciences/catalog.git" in repo_url
+    assert "related-sciences/articat" in repo_url
     assert len(hash) > 0
 
 
