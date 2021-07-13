@@ -116,23 +116,5 @@ and specifically a very handy [interactive rebase doc](https://git-scm.com/book/
 
 ### Build/publish
 
-To build *articat*, first need to prepare your environment:
-
-```bash
-pip install --upgrade pip
-pip install --upgrade build twine
-```
-
-Then to build the project:
-
-```bash
-python -m build
-```
-
-You can inspect the outputs in the `dist` directory. To publish to pypi:
-
-```bash
-twine upload dist/articat-<VERSION>.whl
-```
-
 *articat* uses [setuptools_scm](https://github.com/pypa/setuptools_scm/) for versioning.
+Packaging and publish happens on GitHub release via `release` GitHub workflow.
