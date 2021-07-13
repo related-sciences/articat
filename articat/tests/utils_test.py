@@ -1,16 +1,18 @@
+import subprocess
 import tempfile
 from datetime import datetime
 from pathlib import Path
+from typing import List
 
 import pytest
 from _pytest.monkeypatch import MonkeyPatch
-from dulwich import porcelain
 from pytest import fixture
 
 from articat.artifact import Artifact
 from articat.fs_artifact import FSArtifact
 from articat.tests.utils import TestFSArtifact
 from articat.utils import utils
+from articat.utils.path_utils import cwd
 from articat.utils.typing import PathType
 from articat.utils.utils import download_artifact, dummy_unsafe_cache, get_repo_and_hash
 
@@ -190,26 +192,40 @@ def test_git__get_repo_curr_repo():
 
 
 def test_git__dirty_tree():
+    def run_git(cmd: List[str], out: int = subprocess.DEVNULL) -> None:
+        subprocess.check_call(["git"] + cmd, stderr=out, stdout=out)
+
     repo_dir = tempfile.mkdtemp()
-    r = porcelain.init(repo_dir)
-    porcelain.commit(r, message="empty_commit")
+    with cwd(repo_dir):
+        run_git(["init"])
+        run_git(["config", "user.email", "foo@example.com"])
+        run_git(["config", "user.name", "Foo Bar"])
+        run_git(
+            [
+                "commit",
+                "--allow-empty",
+                "-m foo_commit",
+            ]
+        )
+        run_git(["remote", "add", "origin", "git@github.com:foo/bar.git"])
 
-    _, hash = get_repo_and_hash(repo_dir)
-    assert "DIRTY" not in hash
+        _, hash = get_repo_and_hash()
+        assert "DIRTY" not in hash
 
-    some_file = Path(repo_dir).joinpath("some_file")
-    some_file.touch()
-    _, hash = get_repo_and_hash(repo_dir)
-    assert hash.endswith("DIRTY")
-    some_file.unlink()
-    _, hash = get_repo_and_hash(repo_dir)
-    assert "DIRTY" not in hash
+        some_file = Path(repo_dir).joinpath("some_file")
+        some_file.touch()
+        _, hash = get_repo_and_hash()
+        assert hash.endswith("DIRTY")
+        some_file.unlink()
+        _, hash = get_repo_and_hash()
+        assert "DIRTY" not in hash
 
-    some_file.touch()
-    added, _ = porcelain.add(r, some_file)
-    assert len(added) > 0
-    _, hash = get_repo_and_hash(repo_dir)
-    assert hash.endswith("DIRTY")
-    porcelain.commit(r, message="commit some file")
-    _, hash = get_repo_and_hash(repo_dir)
-    assert "DIRTY" not in hash
+        some_file.touch()
+        run_git(["add", some_file.as_posix()])
+        _, hash = get_repo_and_hash()
+        assert hash.endswith("DIRTY")
+
+        run_git(["commit", "-m bar_commit"])
+        repo_url, hash = get_repo_and_hash()
+        assert "DIRTY" not in hash
+        assert repo_url == "git@github.com:foo/bar.git"

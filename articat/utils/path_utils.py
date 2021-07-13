@@ -1,6 +1,8 @@
+import os
 import shutil
+from contextlib import contextmanager
 from pathlib import Path
-from typing import Optional
+from typing import Iterator, Optional, Union
 
 import fsspec
 
@@ -35,3 +37,20 @@ def fsspec_copyfile(
         dst, mode="wb", compression=dst_compression
     ) as fdst:
         shutil.copyfileobj(fsrc, fdst, length=length)
+
+
+@contextmanager
+def cwd(new_cwd: Union[str, Path]) -> Iterator[None]:
+    """
+    A context manager which changes the working directory to the given
+    path, and then changes it back to its previous value on exit.
+
+    Credit: https://gist.github.com/nottrobin/3d675653244f8814838a
+    """
+
+    prev_cwd = os.getcwd()
+    try:
+        os.chdir(new_cwd)
+        yield
+    finally:
+        os.chdir(prev_cwd)

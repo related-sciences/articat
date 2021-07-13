@@ -3,14 +3,12 @@ import logging
 import os
 import re
 import shutil
-import time
+import subprocess
 from hashlib import md5
 from pathlib import Path
 from typing import Optional, Tuple
 
 import fsspec
-from dulwich import porcelain
-from dulwich.repo import Repo
 from fsspec import AbstractFileSystem
 
 from articat.artifact import Artifact
@@ -21,37 +19,43 @@ from articat.utils.typing import PathType
 logger = logging.getLogger(__name__)
 
 
-def get_repo_and_hash(
-    repo_path: Optional[PathType] = None, remote_location: str = "origin"
-) -> Tuple[str, str]:
+def _git_tree_is_dirty() -> bool:
+    status_out = subprocess.check_output(
+        ["git", "status", "--short", "--untracked-files=all", "--ignored=no"]
+    )
+    # NOTE: if status out is empty, tree is clean
+    return len(status_out) > 0
+
+
+def _git_get_head_hash() -> str:
+    return (
+        subprocess.check_output(["git", "rev-parse", "--verify", "HEAD"])
+        .decode()
+        .strip()
+    )
+
+
+def _git_get_remote_url(remote: str) -> str:
+    return (
+        subprocess.check_output(["git", "remote", "get-url", remote]).decode().strip()
+    )
+
+
+def get_repo_and_hash(remote_location: Optional[str] = None) -> Tuple[str, str]:
     """
     Returns git remote repository URL and HEAD hash. If the tree at
-    HEAD is dirty, the hash will include "-DIRTY" suffix.
+    HEAD is dirty, the hash will include "-DIRTY" suffix. Expect the CWD
+    to be within the git repository.
     """
-    repo = Repo(repo_path or get_root_path())
-
-    t0 = time.time()
-    # if the repository contains a lot of dirty directories this call may take a long time
-    sts = porcelain.status(repo)
-    status_call_time = time.time() - t0
-    if status_call_time > 5:
-        logger.warning(
-            f"Git status call took {status_call_time} seconds, something might be "
-            "wrong with your git repo, like large number of untracked directories, "
-            "see https://github.com/dulwich/dulwich/issues/835"
-        )
-    staged_clean = all(len(sts.staged[c]) == 0 for c in ["add", "delete", "modify"])
-    unstaged_clean = len(sts.unstaged) == 0
-    untracked_clean = len(sts.untracked) == 0
-    tree_dirty = not all((staged_clean, unstaged_clean, untracked_clean))
-
-    if tree_dirty:
-        head_hash = f"{repo.head().decode('UTF-8')}-DIRTY"
+    if _git_tree_is_dirty():
+        head_hash = f"{_git_get_head_hash()}-DIRTY"
     else:
-        head_hash = repo.head().decode("UTF-8")
+        head_hash = _git_get_head_hash()
 
-    remote_url = porcelain.get_remote_repo(repo, remote_location=remote_location)[1]
-    return remote_url, head_hash
+    remote_location = (
+        remote_location or os.environ.get("ARTICAT_GIT_REMOTE") or "origin"
+    )
+    return _git_get_remote_url(remote_location), head_hash
 
 
 def get_relative_call_site(frames_back: int) -> Optional[Tuple[str, int]]:

@@ -2,7 +2,6 @@ pydantic==1.8.2
 fsspec
 fire
 gcsfs
-dulwich
 google-cloud-datastore==1.15.0
 google-cloud-bigquery==2.13.1
 jupyterlab==2.2.0
