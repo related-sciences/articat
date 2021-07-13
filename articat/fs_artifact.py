@@ -109,9 +109,8 @@ class FSArtifact(Artifact):
         fs: AbstractFileSystem, src: str, staging_prefix: str, dst_prefix: str
     ) -> str:
         if isinstance(fs, LocalFileSystem):
-            # This is for tests etc
-            if not fs.exists(dst_prefix):
-                fs.mkdir(dst_prefix)
+            # TODO: make local 1st class citizen, currently only used for tests
+            fs.mkdirs(dst_prefix, exist_ok=True)
         else:
             staging_prefix = re.sub(FSArtifact._fs_scheme_regex, "", staging_prefix)
             dst_prefix = re.sub(FSArtifact._fs_scheme_regex, "", dst_prefix)
