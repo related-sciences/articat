@@ -1,5 +1,5 @@
-pandas==1.2.4
 codecov
+pandas==1.2.4
 pre-commit
 pytest
 pytest-cov

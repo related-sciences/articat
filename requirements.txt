@@ -1,8 +1,8 @@
-pydantic==1.8.2
-fsspec
-fire
-gcsfs
-google-cloud-datastore==1.15.0
+fire==0.4.0
+fsspec==2021.7.0
+gcsfs==2021.7.0
 google-cloud-bigquery==2.13.1
+google-cloud-datastore==1.15.0
 jupyterlab==2.2.0
 papermill==2.3.3
+pydantic==1.8.2
