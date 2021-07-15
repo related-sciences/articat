@@ -25,7 +25,7 @@ def get_dummy_artifact() -> Artifact:
 
 
 def get_lookup(a: Artifact):
-    def my_lookup(**_: Any) -> Iterator[FSArtifact]:
+    def my_lookup(**_: Any) -> Iterator[Artifact]:
         yield a
 
     return my_lookup

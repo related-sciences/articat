@@ -45,8 +45,8 @@ def test_config_overwrite(uid: str):
         with i as a:
             a.stage(dummy_path)
 
-    a1_dir = TestCatalog.get(a1.id, partition=today).files_dir
-    a2_dir = TestCatalog.get(a2.id, partition=today).files_dir
+    a1_dir = TestCatalog.get(a1.id, partition=today, model=TestFSArtifact).files_dir
+    a2_dir = TestCatalog.get(a2.id, partition=today, model=TestFSArtifact).files_dir
 
     assert a1_dir and custom_text not in a1_dir
     assert a2_dir and custom_text in a2_dir

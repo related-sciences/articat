@@ -19,7 +19,7 @@ if typing.TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-class Metadata(BaseModel):  # type: ignore[misc]
+class Metadata(BaseModel):
     spark_schema: Optional[str] = None
     """String representation of spark schema"""
     schema_fields: Optional[List[str]] = None
@@ -43,7 +43,7 @@ class Metadata(BaseModel):  # type: ignore[misc]
         return self
 
 
-class Arbitrary(BaseModel):  # type: ignore[misc]
+class Arbitrary(BaseModel):
     """
     This is a documentation model, arbitrary dict isn't guaranteed to
     have any specific structure, but having these fields that we **try**
@@ -88,7 +88,7 @@ Partition = Union[datetime, date]
 T = TypeVar("T", bound="Artifact")
 
 
-class Artifact(ConfigMixin, BaseModel):  # type: ignore[misc]
+class Artifact(ConfigMixin, BaseModel):
     """Represents a single instance of a data Artifact"""
 
     class Config:
@@ -120,7 +120,7 @@ class Artifact(ConfigMixin, BaseModel):  # type: ignore[misc]
     # string format for partition used in paths etc
     _config: Union[ArticatConfig, Type[ArticatConfig]] = ArticatConfig
 
-    @validator("partition")  # type: ignore[misc]
+    @validator("partition")
     def partition_must_be_datetime(cls, v: Optional[Partition]) -> Optional[datetime]:
         from articat.catalog import Catalog
 

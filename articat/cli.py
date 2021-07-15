@@ -81,7 +81,7 @@ class CLI:
             dev=dev,
         ):
             if format == "json":
-                print(e.json(exclude=json_exclude), flush=True)
+                print(e.json(exclude=json_exclude), flush=True)  # type: ignore[arg-type]
             else:
                 assert format == "csv"
                 csv_result.append(e.dict(exclude=dict(metadata=...)))

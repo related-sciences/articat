@@ -32,7 +32,7 @@ def test_simple_happy_path_catalog(uid: ID) -> None:
     TestFSArtifact.write_dummy_partitioned(uid, yesterday)
     TestFSArtifact.write_dummy_partitioned(uid, today)
 
-    r = TestCatalog.get(uid, partition=yesterday)
+    r = TestCatalog.get(uid, partition=yesterday, model=FSArtifact)
     if r.files_pattern is None:
         pytest.fail("files_pattern should be set")
     else:
@@ -43,8 +43,8 @@ def test_simple_happy_path_catalog(uid: ID) -> None:
         assert manifest_path.exists()
         manifest = FSArtifact.parse_file(manifest_path)
         # Datastore adds tzinfo, which we don't have
-        manifest.partition = manifest.partition.replace(tzinfo=UTC)
-        manifest.created = manifest.created.replace(tzinfo=UTC)
+        manifest.partition = cast(datetime, manifest.partition).replace(tzinfo=UTC)
+        manifest.created = cast(datetime, manifest.created).replace(tzinfo=UTC)
         assert manifest == r
         assert (
             manifest.metadata.arbitrary.get("call_site_relfname")
@@ -52,7 +52,7 @@ def test_simple_happy_path_catalog(uid: ID) -> None:
             .relative_to(get_root_path())
             .as_posix()
         )
-        assert manifest.metadata.arbitrary.get("call_site_lineno") > 1
+        assert cast(int, manifest.metadata.arbitrary.get("call_site_lineno")) > 1
 
     assert len(list(TestCatalog.lookup(uid))) == 2
     assert len(list(TestCatalog.lookup(uid, partition_dt_start=today))) == 1
@@ -268,7 +268,7 @@ def test_catalog_lookup__cant_lookup_by_description_or_spark_schema(uid: ID) -> 
 
 def test_dev_mode(uid: ID) -> None:
     write_a_couple_of_partitions(f"_dev_{uid}", 1)
-    r = TestCatalog.get(uid, partition=date.today(), dev=True)
+    r = TestCatalog.get(uid, partition=date.today(), dev=True, model=FSArtifact)
     assert TestFSArtifact.config.fs_dev_prefix in (r.files_pattern or "")
     assert "final_output" not in (r.files_pattern or "final_output")
 
@@ -290,7 +290,7 @@ def test_dev_mode_dont_dup_prefix(uid: ID) -> None:
 def test_catalog_no_files_pattern_includes_everything(uid: ID) -> None:
     with TestFSArtifact.dummy_versioned_ctx(uid, "0.1.0") as a:
         a.files_pattern = None
-    output = TestCatalog.get(uid, version="0.1.0").files_pattern
+    output = TestCatalog.get(uid, version="0.1.0", model=FSArtifact).files_pattern
     assert output is not None
     assert output.endswith("/**")
 
@@ -419,7 +419,7 @@ def test_catalog_record_loc(uid: ID) -> None:
         assert this_file in __file__
         a.record_loc()
 
-    a = TestCatalog.get(uid, version="0.1.0")
+    a = TestCatalog.get(uid, version="0.1.0", model=TestFSArtifact)
     assert a.metadata.arbitrary.get(k) == this_file
     assert a.metadata.arbitrary.get("call_site_lineno") == this_line + 4
 
@@ -450,7 +450,7 @@ def test_large_arbitrary_entry(uid: ID) -> None:
     with TestFSArtifact.dummy_versioned_ctx(uid, "0.1.0") as a:
         a.metadata.arbitrary.update(dict(foo=more_than_1500))
 
-    a = TestCatalog.get(uid, version="0.1.0")
+    a = TestCatalog.get(uid, version="0.1.0", model=TestFSArtifact)
     assert a.metadata.arbitrary.get("foo") == more_than_1500
 
 

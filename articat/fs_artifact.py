@@ -7,7 +7,7 @@ from functools import lru_cache
 from multiprocessing.pool import ThreadPool
 from pathlib import Path
 from types import TracebackType
-from typing import ClassVar, List, Optional, Type
+from typing import ClassVar, List, Optional, Type, TypeVar
 
 import fsspec
 from fsspec import AbstractFileSystem
@@ -17,6 +17,8 @@ from gcsfs import GCSFileSystem
 from articat.artifact import Artifact
 
 logger = logging.getLogger(__name__)
+
+T = TypeVar("T", bound="FSArtifact")
 
 
 class FSArtifact(Artifact):
@@ -222,8 +224,9 @@ class FSArtifact(Artifact):
         else:
             return path.split(":")[0] if ":" in path else "file"
 
-    def __enter__(self) -> "FSArtifact":
-        r: FSArtifact = super().__enter__()
+    def __enter__(self: T) -> T:
+        r = super().__enter__()
+        assert isinstance(r, FSArtifact)
 
         if not r._file_prefix:
             # This kind of setter flavour is required by pydantic for private fields

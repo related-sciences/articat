@@ -10,11 +10,10 @@ from google.cloud.datastore import Client, Entity, Key
 
 from articat.artifact import ID, Artifact, Metadata, Partition, Version
 from articat.config import ArticatConfig, ConfigMixin
-from articat.fs_artifact import FSArtifact
 
 logger = logging.getLogger(__name__)
 
-T = TypeVar("T", bound="Artifact")
+T = TypeVar("T", bound=Artifact)
 
 
 class Catalog(ConfigMixin):
@@ -43,20 +42,12 @@ class Catalog(ConfigMixin):
     @classmethod
     @overload
     def get(
-        cls, id: ID, *, version: Optional[Version], dev: bool = False
-    ) -> FSArtifact:
-        ...
-
-    @classmethod
-    @overload
-    def get(
-        cls, id: ID, *, partition: Optional[Partition], dev: bool = False
-    ) -> FSArtifact:
-        ...
-
-    @classmethod
-    @overload
-    def get(cls, id: ID, *, dev: bool = False) -> FSArtifact:
+        cls,
+        id: ID,
+        *,
+        version: Optional[Version],
+        dev: bool = False,
+    ) -> Artifact:
         ...
 
     @classmethod
@@ -65,23 +56,45 @@ class Catalog(ConfigMixin):
         cls,
         id: ID,
         *,
-        partition: Optional[Partition] = None,
-        version: Optional[Version] = None,
+        partition: Optional[Partition],
+        dev: bool = False,
+    ) -> Artifact:
+        ...
+
+    @classmethod
+    @overload
+    def get(cls, id: ID, *, dev: bool = False) -> Artifact:
+        ...
+
+    @classmethod
+    @overload
+    def get(cls, id: ID, *, model: Type[T], dev: bool = False) -> T:
+        ...
+
+    @classmethod
+    @overload
+    def get(
+        cls,
+        id: ID,
+        *,
         model: Type[T],
+        version: Optional[Version] = None,
+        partition: Optional[Partition] = None,
         dev: bool = False,
     ) -> T:
         ...
 
+    # NOTE: no return type due to: https://github.com/python/mypy/issues/3737
     @classmethod
-    def get(
+    def get(  # type: ignore[no-untyped-def]
         cls,
         id: ID,
         *,
         version: Optional[Version] = None,
         partition: Optional[Partition] = None,
-        model: Type[T] = FSArtifact,
+        model: Type[Artifact] = Artifact,
         dev: bool = False,
-    ) -> T:
+    ):
         """
         Get a data artifact given its id. You should specify partition or
         version for deterministic retrieval. Model class can be specified
@@ -140,20 +153,19 @@ class Catalog(ConfigMixin):
 
     @classmethod
     @overload
-    def latest_partition(cls, id: ID, *, dev: bool = False) -> FSArtifact:
+    def latest_partition(cls, id: ID, *, dev: bool = False) -> Artifact:
         ...
 
     @classmethod
     @overload
-    def latest_partition(
-        cls, id: ID, *, model: Type[T] = FSArtifact, dev: bool = False
-    ) -> T:
+    def latest_partition(cls, id: ID, *, model: Type[T], dev: bool = False) -> T:
         ...
 
+    # NOTE: no return type due to: https://github.com/python/mypy/issues/3737
     @classmethod
-    def latest_partition(
-        cls, id: ID, *, model: Type[T] = FSArtifact, dev: bool = False
-    ) -> T:
+    def latest_partition(  # type: ignore[no-untyped-def]
+        cls, id: ID, *, model: Type[Artifact] = Artifact, dev: bool = False
+    ):
         try:
             return next(
                 iter(
@@ -170,21 +182,54 @@ class Catalog(ConfigMixin):
             raise ValueError(f"Can't find requested artifact {id}") from e
 
     @classmethod
+    @overload
     def lookup(
         cls,
         id: Optional[ID] = None,
+        *,
         partition_dt_start: Optional[Partition] = None,
         partition_dt_end: Optional[Partition] = None,
         version: Optional[Version] = None,
         metadata: Optional[Metadata] = None,
         limit: Optional[int] = None,
-        model: Type[T] = FSArtifact,
         dev: bool = False,
     ) -> Iterable[Artifact]:
+        ...
+
+    @classmethod
+    @overload
+    def lookup(
+        cls,
+        id: Optional[ID] = None,
+        *,
+        model: Type[T],
+        partition_dt_start: Optional[Partition] = None,
+        partition_dt_end: Optional[Partition] = None,
+        version: Optional[Version] = None,
+        metadata: Optional[Metadata] = None,
+        limit: Optional[int] = None,
+        dev: bool = False,
+    ) -> Iterable[T]:
+        ...
+
+    # NOTE: no return type due to: https://github.com/python/mypy/issues/3737
+    @classmethod
+    def lookup(  # type: ignore[no-untyped-def]
+        cls,
+        id: Optional[ID] = None,
+        *,
+        partition_dt_start: Optional[Partition] = None,
+        partition_dt_end: Optional[Partition] = None,
+        version: Optional[Version] = None,
+        metadata: Optional[Metadata] = None,
+        limit: Optional[int] = None,
+        model: Type[Artifact] = Artifact,
+        dev: bool = False,
+    ):
         """
         Lookup/search atop Catalog. You can search based on id, partitions, version
         and most metadata. Keep in mind that substring matches, case-insensitive matches,
-        or so-called full-text search are not supported right, if that is your
+        or so-called full-text search are not supported, if that is your
         use case match as much as you can and do further matching locally.
         You can't lookup by id + partition/version and metadata at the same time.
 
@@ -209,8 +254,9 @@ class Catalog(ConfigMixin):
         :param limit: limit number of results
         :param model: what model to use to parse the results
         :param dev: whether to use dev mode
-        :return: Iterable[Artifact]
+        :return: Iterable[<model>]
         """
+        assert issubclass(model, Artifact)
         yield from (
             model.parse_obj(r)
             for r in cls._lookup(
@@ -378,7 +424,7 @@ class Catalog(ConfigMixin):
 
         exclude = None if include_arbitrary else dict(metadata=dict(arbitrary=...))
         catalog_dicts = list(
-            i.dict(exclude=exclude)
+            i.dict(exclude=exclude)  # type: ignore[arg-type]
             for i in cls.lookup(dev=dev, limit=limit, model=Artifact)
         )
         return pd.json_normalize(catalog_dicts, sep="_")

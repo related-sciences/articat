@@ -2,7 +2,7 @@ import os
 from contextlib import contextmanager
 from functools import lru_cache
 from pathlib import Path
-from typing import TYPE_CHECKING, ClassVar, Iterator, Optional, Type
+from typing import TYPE_CHECKING, ClassVar, Iterator, Optional, Type, TypeVar
 
 import fsspec
 from google.cloud import datastore
@@ -11,6 +11,8 @@ from articat.artifact import ID, Partition, Version
 from articat.catalog import Catalog
 from articat.config import ArticatConfig
 from articat.fs_artifact import FSArtifact
+
+T = TypeVar("T", bound="TestFSArtifactMixin")
 
 
 class TestCatalog(Catalog):
@@ -42,7 +44,7 @@ class TestFSArtifactMixin(BASE_CLASS):
     def _catalog(cls) -> "Type[Catalog]":
         return TestCatalog
 
-    def __enter__(self) -> FSArtifact:
+    def __enter__(self: T) -> T:
         a = super().__enter__()
         Path(self.staging_file_prefix).mkdir(parents=True, exist_ok=False)
         return a
@@ -50,8 +52,8 @@ class TestFSArtifactMixin(BASE_CLASS):
     @classmethod
     @contextmanager
     def dummy_versioned_ctx(
-        cls, uid: ID, version: Version, dev: bool = False
-    ) -> "Iterator[TestFSArtifact]":
+        cls: Type[T], uid: ID, version: Version, dev: bool = False
+    ) -> Iterator[T]:
         with cls.versioned(uid, version, dev=dev) as a:
             with fsspec.open(a.joinpath("output.txt"), "w") as f:
                 f.write("ala ma kota")
@@ -60,8 +62,8 @@ class TestFSArtifactMixin(BASE_CLASS):
 
     @classmethod
     def write_dummy_versioned(
-        cls, uid: ID, version: Version, dev: bool = False
-    ) -> "TestFSArtifact":
+        cls: Type[T], uid: ID, version: Version, dev: bool = False
+    ) -> T:
         with cls.dummy_versioned_ctx(uid, version, dev=dev) as a:
             ...
         return a
@@ -69,8 +71,8 @@ class TestFSArtifactMixin(BASE_CLASS):
     @classmethod
     @contextmanager
     def dummy_partitioned_ctx(
-        cls, uid: ID, partition: Partition, dev: bool = False
-    ) -> "Iterator[TestFSArtifact]":
+        cls: Type[T], uid: ID, partition: Partition, dev: bool = False
+    ) -> Iterator[T]:
         with cls.partitioned(uid, partition=partition, dev=dev) as a:
             with fsspec.open(a.joinpath("output.txt"), "w") as f:
                 f.write("ala ma kota")
@@ -80,8 +82,8 @@ class TestFSArtifactMixin(BASE_CLASS):
 
     @classmethod
     def write_dummy_partitioned(
-        cls, uid: ID, partition: Partition, dev: bool = False
-    ) -> "TestFSArtifact":
+        cls: Type[T], uid: ID, partition: Partition, dev: bool = False
+    ) -> T:
         with cls.dummy_partitioned_ctx(uid, partition, dev=dev) as a:
             ...
         return a
