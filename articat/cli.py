@@ -1,12 +1,12 @@
 import logging
 import sys
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 from typing import Literal, Optional
 
 from articat.artifact import Artifact
 from articat.bq_artifact import BQArtifact
-from articat.catalog import Catalog
+from articat.config import ArticatConfig
 from articat.fs_artifact import FSArtifact
 
 logger = logging.getLogger(__name__)
@@ -71,9 +71,10 @@ class CLI:
                 "metadata": ...,
             }
         )
-        for e in Catalog.lookup(
+        for e in ArticatConfig.catalog.lookup(
             id=id,
-            partition_dt_start=partition_dt or date.min,
+            partition_dt_start=partition_dt
+            or datetime.fromisoformat(date.min.isoformat()),
             partition_dt_end=partition_dt,
             version=str(version) if version else None,
             limit=limit,

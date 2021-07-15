@@ -1,17 +1,21 @@
 import logging
+import tempfile
 from configparser import ConfigParser
 from enum import Enum
 from pathlib import Path
-from typing import Any, Mapping, Optional, Sequence, Type, Union
+from typing import TYPE_CHECKING, Any, Mapping, Optional, Sequence, Type, Union
 
 from articat.utils.classproperty import classproperty
 
 logger = logging.getLogger(__name__)
 
+if TYPE_CHECKING:
+    from articat.catalog import Catalog
+
 
 class ArticatMode(str, Enum):
     local = "local"
-    gcp = "gcp"
+    gcp_datastore = "gcp_datastore"
 
 
 class ArticatConfig:
@@ -72,8 +76,37 @@ class ArticatConfig:
 
     @classproperty
     def mode(self) -> ArticatMode:
-        """Articat mode. Currently supported: `local`, `gcp`"""
+        """
+        Articat mode. Currently supported: `local`, `gcp`.
+        Defaults to: `local`
+        """
         return ArticatMode(self._config.get("main", "mode", fallback=ArticatMode.local))
+
+    @classproperty
+    def catalog(self) -> "Type[Catalog]":
+        """Returns the Catalog implementation for given mode"""
+        if self.mode == ArticatMode.local:
+            from articat.catalog_local import CatalogLocal
+
+            return CatalogLocal
+        elif self.mode == ArticatMode.gcp_datastore:
+            from articat.catalog_datastore import CatalogDatastore
+
+            return CatalogDatastore
+        else:
+            raise ValueError(f"Unknown catalog for mode: {self.mode}")
+
+    @classproperty
+    def local_db_dir(self) -> str:
+        """
+        Location of the local DB, `local` mode only.
+        Defaults to: ~/.config/articat/local
+        """
+        return self._config.get(
+            "main",
+            "local_db_dir",
+            fallback=Path.home().joinpath(".config", "articat", "local").as_posix(),
+        )
 
     @classproperty
     def gcp_project(self) -> str:
@@ -93,17 +126,38 @@ class ArticatConfig:
     @classproperty
     def fs_tmp_prefix(self) -> str:
         """File system (FS) temporary/staging location"""
-        return self._config["fs"]["tmp_prefix"]
+        try:
+            return self._config["fs"]["tmp_prefix"]
+        except KeyError:
+            r = tempfile.mkdtemp(suffix="artifact_temp_dir_")
+            logger.warning(
+                f"FSArtifact temp directory not configured, assuming local mode, using temp directory: {r}"
+            )
+            return r
 
     @classproperty
     def fs_dev_prefix(self) -> str:
         """File system (FS) development location"""
-        return self._config["fs"]["dev_prefix"]
+        try:
+            return self._config["fs"]["dev_prefix"]
+        except KeyError:
+            r = Path.cwd().joinpath(".articat_catalog", "dev").as_posix()
+            logger.warning(
+                f"FSArtifact development directory not configured, assuming local mode, using cwd: {r}"
+            )
+            return r
 
     @classproperty
     def fs_prod_prefix(self) -> str:
         """File system (FS) production/final location"""
-        return self._config["fs"]["prod_prefix"]
+        try:
+            return self._config["fs"]["prod_prefix"]
+        except KeyError:
+            r = Path.cwd().joinpath(".articat_catalog", "prod").as_posix()
+            logger.warning(
+                f"FSArtifact production directory not configured, assuming local mode, using cwd: {r}"
+            )
+            return r
 
 
 class ConfigMixin:

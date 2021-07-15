@@ -2,7 +2,6 @@ import os
 from contextlib import contextmanager
 from datetime import date, timedelta
 from functools import lru_cache
-from pathlib import Path
 from random import shuffle
 from typing import TYPE_CHECKING, ClassVar, Iterator, Optional, Type, TypeVar
 
@@ -46,11 +45,6 @@ class TestFSArtifactMixin(BASE_CLASS):
     @classmethod
     def _catalog(cls) -> "Type[Catalog]":
         return TestCatalog
-
-    def __enter__(self: T) -> T:
-        a = super().__enter__()
-        Path(self.staging_file_prefix).mkdir(parents=True, exist_ok=False)
-        return a
 
     @classmethod
     @contextmanager

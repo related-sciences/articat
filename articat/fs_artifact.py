@@ -107,12 +107,8 @@ class FSArtifact(Artifact):
     def _publish_file(
         fs: AbstractFileSystem, src: str, staging_prefix: str, dst_prefix: str
     ) -> str:
-        if isinstance(fs, LocalFileSystem):
-            # TODO: make local 1st class citizen, currently only used for tests
-            fs.mkdirs(dst_prefix, exist_ok=True)
-        else:
-            staging_prefix = re.sub(FSArtifact._fs_scheme_regex, "", staging_prefix)
-            dst_prefix = re.sub(FSArtifact._fs_scheme_regex, "", dst_prefix)
+        staging_prefix = re.sub(FSArtifact._fs_scheme_regex, "", staging_prefix)
+        dst_prefix = re.sub(FSArtifact._fs_scheme_regex, "", dst_prefix)
         if staging_prefix not in src:
             raise ValueError(
                 f"Looks like staged file pattern is outside of the staging space: {staging_prefix} "
@@ -165,6 +161,8 @@ class FSArtifact(Artifact):
         # * add a _SUCCESS marker file
         # * dump all the metadata about this artifact in a _MANIFEST.json file
         actual_prefix = self._get_file_prefix(tmp=False)
+        # NOTE: if local FS, we need to create directory structures
+        self._create_if_local(actual_prefix)
         start = time.time()
         self._worker_pool().map(
             lambda p: self._publish_file(
@@ -221,6 +219,12 @@ class FSArtifact(Artifact):
         else:
             return path.split(":")[0] if ":" in path else "file"
 
+    @classmethod
+    def _create_if_local(cls, path: str) -> None:
+        fs = fsspec.filesystem(cls._get_protocol(path))
+        if isinstance(fs, LocalFileSystem):
+            fs.mkdirs(path, exist_ok=True)
+
     def __enter__(self: T) -> T:
         r = super().__enter__()
         assert isinstance(r, FSArtifact)
@@ -229,12 +233,8 @@ class FSArtifact(Artifact):
             # This kind of setter flavour is required by pydantic for private fields
             object.__setattr__(r, "_file_prefix", r._get_file_prefix(tmp=True))
 
-        future_output = r._get_file_prefix(tmp=False)
-        if fsspec.filesystem(r._get_protocol(future_output)).exists(future_output):
-            raise ValueError(
-                f"Output for this artifact already exists in {future_output}"
-            )
-
+        # NOTE: if local FS, we need to create directory structures
+        r._create_if_local(r.staging_file_prefix)
         return r
 
     def __exit__(
@@ -260,15 +260,15 @@ class FSArtifact(Artifact):
         """
         if not local_path.exists():
             raise ValueError(f"`{local_path.as_posix()} does not exists`")
-        gcs = fsspec.get_filesystem_class(
+        fs = fsspec.get_filesystem_class(
             FSArtifact._get_protocol(self.staging_file_prefix)
         )()
         if local_path.is_dir():
-            gcs.upload(
+            fs.upload(
                 local_path.as_posix(),
                 self.staging_file_prefix,
                 recursive=True,
             )
         else:
-            gcs.upload(local_path.as_posix(), self.joinpath(local_path.name))
+            fs.upload(local_path.as_posix(), self.joinpath(local_path.name))
         return self

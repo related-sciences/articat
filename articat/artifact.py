@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 import typing
 from datetime import date, datetime
@@ -20,7 +22,7 @@ from google.cloud import datastore
 from google.cloud.datastore.helpers import entity_to_protobuf
 from pydantic import BaseModel, Extra, validator
 
-from articat.config import ArticatConfig, ConfigMixin
+from articat.config import ArticatConfig, ArticatMode, ConfigMixin
 from articat.utils.datetime_utils import convert_to_datetime
 
 if typing.TYPE_CHECKING:
@@ -157,11 +159,8 @@ class Artifact(ConfigMixin, BaseModel):
             "use one of the concrete Artifact classes"
         )
 
-    @classmethod
-    def _catalog(cls) -> "Type[Catalog]":
-        from articat.catalog import Catalog
-
-        return Catalog
+    def _catalog(self) -> "Type[Catalog]":
+        return self.config.catalog
 
     def _exclude_private_fields(self) -> Set[str]:
         # TODO: remove since the config is in place
@@ -328,7 +327,11 @@ class Artifact(ConfigMixin, BaseModel):
         return self
 
     def __enter__(self: T) -> T:
-        if not hasattr(self, "__test__") and not self._is_dev_mode(self.id):
+        if (
+            not hasattr(self, "__test__")
+            and not self._is_dev_mode(self.id)
+            and self.config.mode != ArticatMode.local
+        ):
             if "RS_PROD" not in environ:
                 raise ValueError(
                     f"Looks like {self.spec()} would go to the production Catalog,"
