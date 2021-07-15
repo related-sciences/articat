@@ -3,13 +3,25 @@ import typing
 from datetime import date, datetime
 from os import environ
 from types import TracebackType
-from typing import Any, ClassVar, Dict, List, Optional, Set, Tuple, Type, TypeVar, Union
+from typing import (
+    Any,
+    ClassVar,
+    Dict,
+    List,
+    Mapping,
+    Optional,
+    Set,
+    Type,
+    TypeVar,
+    Union,
+)
 
 from google.cloud import datastore
 from google.cloud.datastore.helpers import entity_to_protobuf
 from pydantic import BaseModel, Extra, validator
 
 from articat.config import ArticatConfig, ConfigMixin
+from articat.utils.datetime_utils import convert_to_datetime
 
 if typing.TYPE_CHECKING:
     import pyspark
@@ -114,7 +126,7 @@ class Artifact(ConfigMixin, BaseModel):
     """Artifact version, akin to "git tag" for the artifact"""
     created: Optional[datetime] = None
     """Creation time"""
-    _retire_entity: Optional[Tuple[ID, "Artifact"]] = None
+    _retire_entity: Optional[Mapping[str, Any]] = None
     # Note: this field is used to carry retired entity, it's not serialized
     _partition_str_format: ClassVar[str] = "%Y%m%dT%H%M%S"
     # string format for partition used in paths etc
@@ -122,9 +134,7 @@ class Artifact(ConfigMixin, BaseModel):
 
     @validator("partition")
     def partition_must_be_datetime(cls, v: Optional[Partition]) -> Optional[datetime]:
-        from articat.catalog import Catalog
-
-        return None if v is None else Catalog._convert_to_datetime(v)
+        return None if v is None else convert_to_datetime(v)
 
     def open_browser(self) -> None:
         """Opens browser with the URL associated with this artifact. Best effort."""
@@ -350,8 +360,9 @@ class Artifact(ConfigMixin, BaseModel):
 
         # Check if the artifact metadata already exists:
         try:
+            # NOTE: we use protected _lookup because we want to parse raw object later
             if self.version is not None:
-                # Note: if version is set, we check by version
+                # NOTE: if version is set, we check by version
                 e = next(
                     iter(self._catalog()._lookup(id=self.id, version=self.version))
                 )
@@ -369,9 +380,7 @@ class Artifact(ConfigMixin, BaseModel):
                 logger.warning(
                     f"Dev mode will overwrite metadata for previous {self.id}"
                 )
-                object.__setattr__(
-                    self, "_retire_entity", (e.id, self.__class__.parse_obj(e))
-                )
+                object.__setattr__(self, "_retire_entity", e)
                 return self
             raise ValueError("Catalog already has an entry for this artifact!")
         except StopIteration:

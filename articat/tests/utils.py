@@ -1,7 +1,9 @@
 import os
 from contextlib import contextmanager
+from datetime import date, timedelta
 from functools import lru_cache
 from pathlib import Path
+from random import shuffle
 from typing import TYPE_CHECKING, ClassVar, Iterator, Optional, Type, TypeVar
 
 import fsspec
@@ -9,14 +11,15 @@ from google.cloud import datastore
 
 from articat.artifact import ID, Partition, Version
 from articat.catalog import Catalog
+from articat.catalog_datastore import CatalogDatastore
 from articat.config import ArticatConfig
 from articat.fs_artifact import FSArtifact
 
 T = TypeVar("T", bound="TestFSArtifactMixin")
 
 
-class TestCatalog(Catalog):
-    """Catalog used for tests"""
+class TestCatalog(CatalogDatastore):
+    """Datastore Catalog used for tests"""
 
     @classmethod
     @lru_cache
@@ -98,3 +101,14 @@ class TestFSArtifact(TestFSArtifactMixin, FSArtifact):
     a test class. Artifact can also check for the existence of
     __test__ to check if it's running the the test context.
     """
+
+
+def write_a_couple_of_partitions(uid: ID, n: int) -> None:
+    # we shuffle the partitions to further tests ordering etc
+    ns = list(range(n))
+    shuffle(ns)
+    for i in ns:
+        dt = date.today() - timedelta(days=i)
+        TestFSArtifact.write_dummy_partitioned(uid, dt)
+        # write some unrelated dataset
+        TestFSArtifact.write_dummy_partitioned(f"{uid}1234", dt)
