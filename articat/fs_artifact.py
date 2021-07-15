@@ -23,17 +23,14 @@ T = TypeVar("T", bound="FSArtifact")
 
 class FSArtifact(Artifact):
     """
-    File/object based artifact.
-
-    Usage:
-     * use to store file/object artifacts
-     * use `staging_file_prefix` location to stage your data
-     * you should use it in the context of with-statement
-     * use dev argument to indicate dev mode
+    File/object based Artifact. Metadata associated with files/objects
+    stored on file system/object store. Provides utilities for staging
+    data. Location of temp/dev/prod results can be configured.
 
     Example:
-        with FSArtifact.partitioned("id", date.today(), dev=True) as artifact:
-            with fsspec.open(f"{artifact.staging_file_prefix}/out.txt", "w") as fd:
+
+        with FSArtifact.partitioned("id", date.today(), dev=True) as fsa:
+            with fsspec.open(fsa.joinpath("out.txt"), "w") as fd:
                 fd.write("hello world")
     """
 
