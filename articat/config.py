@@ -124,6 +124,14 @@ class ArticatConfig:
         """BigQuery (BQ) development dataset, for `gcp` mode only"""
         return self._config["bq"]["dev_dataset"]
 
+    @classmethod
+    def _set_option(
+        cls, c: ConfigParser, section: str, option: str, value: Any
+    ) -> None:
+        if not c.has_section(section):
+            c.add_section(section)
+        c.set(section, option, value)
+
     @class_or_instance_method
     def fs_tmp_prefix(self) -> str:
         """File system (FS) temporary/staging location"""
@@ -131,7 +139,7 @@ class ArticatConfig:
             return self._config["fs"]["tmp_prefix"]
         except KeyError:
             r = tempfile.mkdtemp(suffix="artifact_temp_dir_")
-            self._config.set("fs", "tmp_prefix", r)
+            self._set_option(self._config, "fs", "tmp_prefix", r)
             warnings.warn(
                 f"FSArtifact temp directory not configured, assuming local mode, using temp directory: {r}"
             )
@@ -144,7 +152,7 @@ class ArticatConfig:
             return self._config["fs"]["dev_prefix"]
         except KeyError:
             r = Path.cwd().joinpath(".articat_catalog", "dev").as_posix()
-            self._config.set("fs", "dev_prefix", r)
+            self._set_option(self._config, "fs", "tmp_prefix", r)
             warnings.warn(
                 f"FSArtifact development directory not configured, assuming local mode, using cwd: {r}"
             )
@@ -157,7 +165,7 @@ class ArticatConfig:
             return self._config["fs"]["prod_prefix"]
         except KeyError:
             r = Path.cwd().joinpath(".articat_catalog", "prod").as_posix()
-            self._config.set("fs", "prod_prefix", r)
+            self._set_option(self._config, "fs", "tmp_prefix", r)
             warnings.warn(
                 f"FSArtifact production directory not configured, assuming local mode, using cwd: {r}"
             )

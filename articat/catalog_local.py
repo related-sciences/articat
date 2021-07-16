@@ -8,6 +8,7 @@ from typing import Any, Iterable, Mapping, Optional
 
 from articat.artifact import ID, Artifact, Metadata, Partition, Version
 from articat.catalog import Catalog
+from articat.utils.datetime_utils import convert_to_datetime
 
 
 class CatalogLocal(Catalog):
@@ -60,12 +61,19 @@ class CatalogLocal(Catalog):
                 if version is not None:
                     if a.version != version:
                         continue
-                if partition_dt_start is not None and a.partition is not None:
-                    if a.partition < partition_dt_start:
-                        continue
-                if partition_dt_end is not None and a.partition is not None:
-                    if a.partition >= partition_dt_end:
-                        continue
+                if (
+                    partition_dt_start is not None or partition_dt_end is not None
+                ) and a.partition is not None:
+                    if partition_dt_start == partition_dt_end and partition_dt_start:
+                        if a.partition != convert_to_datetime(partition_dt_start):
+                            continue
+                    else:
+                        if partition_dt_start is not None:
+                            if a.partition < convert_to_datetime(partition_dt_start):
+                                continue
+                        if partition_dt_end is not None:
+                            if a.partition >= convert_to_datetime(partition_dt_end):
+                                continue
                 result.append(a.dict())
         yield from sorted(
             result, key=lambda x: (x["partition"], x["version"]), reverse=True
