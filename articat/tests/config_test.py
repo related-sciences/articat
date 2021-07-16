@@ -3,8 +3,9 @@ from datetime import date
 from pathlib import Path
 
 import pytest
+from _pytest.monkeypatch import MonkeyPatch
 
-from articat.config import ArticatConfig
+from articat.config import ArticatConfig, ArticatMode
 from articat.tests.utils import TestCatalog, TestFSArtifact
 
 pytestmark = pytest.mark.datastore_emulated
@@ -50,3 +51,21 @@ def test_config_overwrite(uid: str):
 
     assert a1_dir and custom_text not in a1_dir
     assert a2_dir and custom_text in a2_dir
+
+
+def test_config_env_variable(monkeypatch: MonkeyPatch):
+    test_config = ArticatConfig._config
+    test_config_mode = ArticatConfig.mode()
+    assert test_config_mode == ArticatMode.gcp_datastore
+
+    custom_config_path = Path(tempfile.mktemp())
+    custom_config_path.write_text("[main]\n" "mode = local\n")
+
+    try:
+        with monkeypatch.context() as m:
+            m.setenv("ARTICAT_CONFIG", custom_config_path.as_posix())
+            ArticatConfig.register_config()
+            assert ArticatConfig.mode() == ArticatMode.local
+            assert ArticatConfig.mode() != test_config_mode
+    finally:
+        ArticatConfig._config = test_config
