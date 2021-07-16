@@ -162,7 +162,7 @@ class ArticatConfig:
             return self._config["fs"]["dev_prefix"]
         except KeyError:
             r = Path.cwd().joinpath(".articat_catalog", "dev").as_posix()
-            self._set_option(self._config, "fs", "tmp_prefix", r)
+            self._set_option(self._config, "fs", "dev_prefix", r)
             warnings.warn(
                 f"FSArtifact development directory not configured, assuming local mode, using cwd: {r}"
             )
@@ -175,7 +175,7 @@ class ArticatConfig:
             return self._config["fs"]["prod_prefix"]
         except KeyError:
             r = Path.cwd().joinpath(".articat_catalog", "prod").as_posix()
-            self._set_option(self._config, "fs", "tmp_prefix", r)
+            self._set_option(self._config, "fs", "prod_prefix", r)
             warnings.warn(
                 f"FSArtifact production directory not configured, assuming local mode, using cwd: {r}"
             )
