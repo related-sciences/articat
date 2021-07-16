@@ -17,11 +17,6 @@ def to_pathlib(path: PathType) -> Path:
         return path
 
 
-def get_root_path() -> Path:
-    """Return root of the articat project"""
-    return Path(__file__).parent.parent.parent.absolute()
-
-
 def fsspec_copyfile(
     src: str,
     dst: str,

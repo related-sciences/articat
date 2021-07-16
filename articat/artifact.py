@@ -199,9 +199,9 @@ class Artifact(ConfigMixin, BaseModel):
         function only works when called from partitioned/versioned.
         """
         try:
-            from articat.utils.utils import get_relative_call_site
+            from articat.utils.utils import get_call_site
 
-            call_site = get_relative_call_site(frames_back=3)
+            call_site = get_call_site(frames_back=3)
         except Exception:
             logger.exception("Couldn't get call site")
             call_site = None
