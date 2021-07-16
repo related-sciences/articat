@@ -13,7 +13,6 @@ from fsspec import AbstractFileSystem
 
 from articat.artifact import Artifact
 from articat.fs_artifact import FSArtifact
-from articat.utils.path_utils import get_root_path
 from articat.utils.typing import PathType
 
 logger = logging.getLogger(__name__)
@@ -58,9 +57,9 @@ def get_repo_and_hash(remote_location: Optional[str] = None) -> Tuple[str, str]:
     return _git_get_remote_url(remote_location), head_hash
 
 
-def get_relative_call_site(frames_back: int) -> Optional[Tuple[str, int]]:
+def get_call_site(frames_back: int) -> Optional[Tuple[str, int]]:
     """
-    Returns relative path (to the repo root) of the call site file.
+    Returns path of the call site file, and line number
 
     :param frames_back: number of frames to look back in the call stack for the
                         call site of interest. For example 1 is the call site of
@@ -70,15 +69,7 @@ def get_relative_call_site(frames_back: int) -> Optional[Tuple[str, int]]:
     caller_frame = inspect.stack()[frames_back]
     caller_fname_path = Path(caller_frame.filename)
     caller_lineno = caller_frame.lineno
-    root_path = get_root_path()
-    if root_path not in caller_fname_path.parents:
-        logger.warning(
-            f"Was called from {caller_fname_path.absolute().as_posix()} that appears to live "
-            "outside the repository, can't resolve the relative path"
-        )
-        return None
-    else:
-        return caller_fname_path.relative_to(root_path).as_posix(), caller_lineno
+    return caller_fname_path.as_posix(), caller_lineno
 
 
 def download_artifact(artifact: FSArtifact, local_dir: PathType) -> str:

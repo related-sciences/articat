@@ -12,7 +12,7 @@ from articat.tests.utils import (
     TestFSArtifact,
     write_a_couple_of_partitions,
 )
-from articat.utils.utils import get_relative_call_site
+from articat.utils.utils import get_call_site
 
 
 def test_large_arbitrary_entry(uid: ID) -> None:
@@ -36,10 +36,10 @@ def test_catalog_record_loc(uid: ID) -> None:
         assert k in a.metadata.arbitrary
         assert a.metadata.arbitrary.pop(k)
         assert k not in a.metadata.arbitrary
-        call_site = get_relative_call_site(1)
+        call_site = get_call_site(1)
         assert call_site
         this_file, this_line = call_site
-        assert this_file in __file__
+        assert this_file == __file__
         a.record_loc()
 
     a = TestCatalog.get(uid, version="0.1.0", model=TestFSArtifact)

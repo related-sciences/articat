@@ -1,4 +1,3 @@
-import inspect
 from datetime import date, datetime, time, timedelta
 from pathlib import Path
 from typing import List, cast
@@ -8,12 +7,12 @@ from dateutil.tz import UTC
 
 from articat.artifact import ID, Metadata
 from articat.fs_artifact import FSArtifact
+from articat.tests import utils
 from articat.tests.utils import (
     TestCatalog,
     TestFSArtifact,
     write_a_couple_of_partitions,
 )
-from articat.utils.path_utils import get_root_path
 
 # Tests in this module require Datastore emulator, and by default won't run
 # unless pytest has been told that the emulator is in fact available
@@ -44,12 +43,8 @@ def test_simple_happy_path_catalog(uid: ID) -> None:
         manifest.partition = cast(datetime, manifest.partition).replace(tzinfo=UTC)
         manifest.created = cast(datetime, manifest.created).replace(tzinfo=UTC)
         assert manifest == r
-        assert (
-            manifest.metadata.arbitrary.get("call_site_relfname")
-            == Path(inspect.getfile(TestFSArtifact))
-            .relative_to(get_root_path())
-            .as_posix()
-        )
+        # Artifact is created via a test helper in the utils, so the call site is there:
+        assert manifest.metadata.arbitrary.get("call_site_relfname") == utils.__file__
         assert cast(int, manifest.metadata.arbitrary.get("call_site_lineno")) > 1
 
     assert len(list(TestCatalog.lookup(uid))) == 2
