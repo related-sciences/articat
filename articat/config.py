@@ -1,4 +1,5 @@
 import logging
+import os
 import tempfile
 import warnings
 from configparser import ConfigParser
@@ -65,11 +66,20 @@ class ArticatConfig:
         Register configuration from config paths and config dictionary. Config
         paths are read in order, `config_dict` is applied after config paths.
         This methods registers "global"/default configuration, use constructor
-        to get an instance of a config.
+        to get an instance of a config. You can also specify the configuration
+        location via env variable: ARTICAT_CONFIG.
+
+        `config_paths` resolution order:
+         * function argument
+         * `ARTICAT_CONFIG` env variable
+         * default paths
         """
-        config_paths = (
-            config_paths if config_paths is not None else cls.default_config_paths
-        )
+        if config_paths is None:
+            env_config_path = os.environ.get("ARTICAT_CONFIG")
+            if env_config_path is not None:
+                config_paths = [env_config_path]
+            else:
+                config_paths = cls.default_config_paths
         cls._config = cls._read_config(
             config_paths=config_paths, config_dict=config_dict
         )
