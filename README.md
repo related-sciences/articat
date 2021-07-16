@@ -13,8 +13,8 @@ from articat import FSArtifact
 from pathlib import Path
 from datetime import date
 
-# Apart from being metadata containers, Artifact classes have optional
-# convenience methods to help in data publishing:
+# Apart from being a metadata containers, Artifact classes have optional
+# convenience methods to help in data publishing flow:
 
 with FSArtifact.partitioned("foo", partition=date(1643, 1, 4)) as fsa:
     # To create a new Artifact, always use `with` statement, and
@@ -28,20 +28,21 @@ with FSArtifact.partitioned("foo", partition=date(1643, 1, 4)) as fsa:
     data_path.write_text("42")
 
     # Now let's stage that data, temporary and final data directories/buckets
-    # are configurable
+    # are configurable (see below)
     fsa.stage(data_path)
 
     # Additionally let's provide some description:
     fsa.metadata.description = "Answer to the Ultimate Question of Life, the Universe, and Everything"
 ```
 
-To retrieve metadata about the Artifact above:
+To retrieve the metadata about the Artifact above:
 
 ```python
 from articat.fs_artifact import FSArtifact
 from datetime import date
+from pathlib import Path
 
-# To retrieve metadata, use Artifact object, and `fetch` method:
+# To retrieve the metadata, use Artifact object, and `fetch` method:
 fsa = FSArtifact.partitioned("foo", partition=date(1643, 1, 4)).fetch()
 
 fsa.id # "foo"
@@ -49,12 +50,14 @@ fsa.created # <CREATION-TIMESTAMP>
 fsa.partition # <CREATION-TIMESTAMP>
 fsa.metadata.description # "Answer to the Ultimate Question of Life, the Universe, and Everything"
 fsa.main_dir # Data directory, this is where the data was stored after staging
+Path(fsa.joinpath("data")).read_text() # 42
 ```
 
 ## Features
 
  * store and retrieve metadata about your data artifacts
  * no long running services (low maintenance)
+ * data publishing utils builtin
  * IO/data format agnostic
  * immutable metadata
 
@@ -67,13 +70,14 @@ Currently available Artifact flavours:
 
 ## Mode
 
- * `local`: mostly for testing, metadata is stored in locally (configurable, default: `~/.config/articat/local`)
+ * `local`: mostly for testing/demo, metadata is stored locally (configurable, default: `~/.config/articat/local`)
  * `gcp_datastore`: metadata is stored in the Google Cloud Datastore
 
 ## Configuration
 
 `articat` configuration can be provided in the API, or configuration files. By default configuration
-is loaded from `~/.config/articat/articat.cfg` and `articat.cfg` in current working directory.
+is loaded from `~/.config/articat/articat.cfg` and `articat.cfg` in current working directory. You
+can also point at the configuration file via environment variable `ARTICAT_CONFIG`.
 
 You use `local` mode without configuration file. Available options:
 
