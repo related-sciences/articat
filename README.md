@@ -72,18 +72,27 @@ You use `local` mode without configuration file. Available options:
 
  ```toml
 [main]
-mode =          # local or gcp_datastore, default: local
-local_db_dir =  # local DB directory, default: ~/.config/articat/local
+# local or gcp_datastore, default: local
+# mode =
+
+# local DB directory, default: ~/.config/articat/local
+# local_db_dir =
 
 [fs]
-tmp_prefix =    # temporary directory/prefix
-dev_prefix =    # development data directory/prefix
-prod_prefix =   # production data directory/prefix
+# temporary directory/prefix
+# tmp_prefix =
+# development data directory/prefix
+# dev_prefix =
+# production data directory/prefix
+# prod_prefix =
 
 [gcp]
-project =       # GCP project
+# GCP project
+# project =
 
 [bq]
-dev_dataset =   # development data BigQuery dataset
-prod_dataset =  # production data BigQuery dataset
+# development data BigQuery dataset
+# dev_dataset =
+# production data BigQuery dataset
+# prod_dataset =
 ```
