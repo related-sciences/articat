@@ -50,7 +50,9 @@ def test_catalog_record_loc(uid: ID) -> None:
 def test_write_to_prod_on_non_prod_env_fails(uid: ID, monkeypatch: MonkeyPatch) -> None:
     with monkeypatch.context() as m:
         m.delattr(TestFSArtifact, "__test__")
-        with pytest.raises(ValueError, match="your environment is missing RS_PROD"):
+        with pytest.raises(
+            ValueError, match="your environment is missing ARTICAT_PROD"
+        ):
             TestFSArtifact.write_dummy_versioned(uid, "0.1.0")
 
 
