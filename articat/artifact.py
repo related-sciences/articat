@@ -332,11 +332,11 @@ class Artifact(ConfigMixin, BaseModel):
             and not self._is_dev_mode(self.id)
             and self.config().mode() != ArticatMode.local
         ):
-            if "RS_PROD" not in environ:
+            if "ARTICAT_PROD" not in environ:
                 raise ValueError(
-                    f"Looks like {self.spec()} would go to the production Catalog,"
-                    " but your environment is missing RS_PROD, aborting. If you truly"
-                    " intend to write to production, set environment variable RS_PROD=1."
+                    f"Looks like {self.spec()} would go to the production catalog,"
+                    " but your environment is missing ARTICAT_PROD, aborting. If you truly"
+                    " intend to write to production, set environment variable ARTICAT_PROD=1."
                 )
 
         if self.created is not None:
