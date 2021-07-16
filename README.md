@@ -51,6 +51,13 @@ fsa.metadata.description # "Answer to the Ultimate Question of Life, the Univers
 fsa.main_dir # Data directory, this is where the data was stored after staging
 ```
 
+## Features
+
+ * store and retrieve metadata about your data artifacts
+ * no long running services (low maintenance)
+ * IO/data format agnostic
+ * immutable metadata
+
 ## Artifact flavours
 
 Currently available Artifact flavours:
