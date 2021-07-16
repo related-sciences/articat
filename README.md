@@ -65,25 +65,25 @@ Currently available Artifact flavours:
 
 ## Configuration
 
-`artifact` configuration can be provided in the API, or configuration files. By default configuration is
-loaded from `~/.config/articat/articat.cfg` and `articat.cfg` in current working directory.
+`articat` configuration can be provided in the API, or configuration files. By default configuration
+is loaded from `~/.config/articat/articat.cfg` and `articat.cfg` in current working directory.
 
 You use `local` mode without configuration file. Available options:
 
  ```toml
 [main]
-mode = <local or gcp_datastore, default: local>
-local_db_dir = <local DB directory, default: ~/.config/articat/local>
+mode =          # local or gcp_datastore, default: local
+local_db_dir =  # local DB directory, default: ~/.config/articat/local
 
 [fs]
-tmp_prefix = <temporary directory/prefix>
-dev_prefix = <development data directory/prefix>
-prod_prefix = <production data directory/prefix>
+tmp_prefix =    # temporary directory/prefix
+dev_prefix =    # development data directory/prefix
+prod_prefix =   # production data directory/prefix
 
 [gcp]
-project = <GCP project>
+project =       # GCP project
 
 [bq]
-dev_dataset = <development data BigQuery dataset>
-prod_dataset = <production data BigQuery dataset>
+dev_dataset =   # development data BigQuery dataset
+prod_dataset =  # production data BigQuery dataset
 ```
