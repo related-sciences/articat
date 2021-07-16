@@ -1,11 +1,12 @@
 import logging
 import tempfile
+import warnings
 from configparser import ConfigParser
 from enum import Enum
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Mapping, Optional, Sequence, Type, Union
 
-from articat.utils.classproperty import classproperty
+from articat.utils.class_or_instance_method import class_or_instance_method
 
 logger = logging.getLogger(__name__)
 
@@ -74,7 +75,7 @@ class ArticatConfig:
         )
         return cls
 
-    @classproperty
+    @class_or_instance_method
     def mode(self) -> ArticatMode:
         """
         Articat mode. Currently supported: `local`, `gcp`.
@@ -82,21 +83,21 @@ class ArticatConfig:
         """
         return ArticatMode(self._config.get("main", "mode", fallback=ArticatMode.local))
 
-    @classproperty
+    @class_or_instance_method
     def catalog(self) -> "Type[Catalog]":
         """Returns the Catalog implementation for given mode"""
-        if self.mode == ArticatMode.local:
+        if self.mode() == ArticatMode.local:
             from articat.catalog_local import CatalogLocal
 
             return CatalogLocal
-        elif self.mode == ArticatMode.gcp_datastore:
+        elif self.mode() == ArticatMode.gcp_datastore:
             from articat.catalog_datastore import CatalogDatastore
 
             return CatalogDatastore
         else:
             raise ValueError(f"Unknown catalog for mode: {self.mode}")
 
-    @classproperty
+    @class_or_instance_method
     def local_db_dir(self) -> str:
         """
         Location of the local DB, `local` mode only.
@@ -108,53 +109,56 @@ class ArticatConfig:
             fallback=Path.home().joinpath(".config", "articat", "local").as_posix(),
         )
 
-    @classproperty
+    @class_or_instance_method
     def gcp_project(self) -> str:
         """Google Cloud Platform (GCP) project, for `gcp` mode only"""
         return self._config["gcp"]["project"]
 
-    @classproperty
+    @class_or_instance_method
     def bq_prod_dataset(self) -> str:
         """BigQuery (BQ) production dataset, for `gcp` mode only"""
         return self._config["bq"]["prod_dataset"]
 
-    @classproperty
+    @class_or_instance_method
     def bq_dev_dataset(self) -> str:
         """BigQuery (BQ) development dataset, for `gcp` mode only"""
         return self._config["bq"]["dev_dataset"]
 
-    @classproperty
+    @class_or_instance_method
     def fs_tmp_prefix(self) -> str:
         """File system (FS) temporary/staging location"""
         try:
             return self._config["fs"]["tmp_prefix"]
         except KeyError:
             r = tempfile.mkdtemp(suffix="artifact_temp_dir_")
-            logger.warning(
+            self._config.set("fs", "tmp_prefix", r)
+            warnings.warn(
                 f"FSArtifact temp directory not configured, assuming local mode, using temp directory: {r}"
             )
             return r
 
-    @classproperty
+    @class_or_instance_method
     def fs_dev_prefix(self) -> str:
         """File system (FS) development location"""
         try:
             return self._config["fs"]["dev_prefix"]
         except KeyError:
             r = Path.cwd().joinpath(".articat_catalog", "dev").as_posix()
-            logger.warning(
+            self._config.set("fs", "dev_prefix", r)
+            warnings.warn(
                 f"FSArtifact development directory not configured, assuming local mode, using cwd: {r}"
             )
             return r
 
-    @classproperty
+    @class_or_instance_method
     def fs_prod_prefix(self) -> str:
         """File system (FS) production/final location"""
         try:
             return self._config["fs"]["prod_prefix"]
         except KeyError:
             r = Path.cwd().joinpath(".articat_catalog", "prod").as_posix()
-            logger.warning(
+            self._config.set("fs", "prod_prefix", r)
+            warnings.warn(
                 f"FSArtifact production directory not configured, assuming local mode, using cwd: {r}"
             )
             return r
@@ -165,7 +169,7 @@ class ConfigMixin:
 
     _config: Union[Type[ArticatConfig], ArticatConfig]
 
-    @classproperty
+    @class_or_instance_method
     def config(self) -> Union[Type[ArticatConfig], ArticatConfig]:
         """Get Articat config object"""
         return self._config

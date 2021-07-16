@@ -103,7 +103,7 @@ def test_catalog_fails_on_preexisting_manifest_file(uid: ID) -> None:
 def test_dev_mode(uid: ID) -> None:
     write_a_couple_of_partitions(f"_dev_{uid}", 1)
     r = TestCatalog.get(uid, partition=date.today(), dev=True, model=FSArtifact)
-    assert TestFSArtifact.config.fs_dev_prefix in (r.files_pattern or "")
+    assert TestFSArtifact.config().fs_dev_prefix() in (r.files_pattern or "")
     assert "final_output" not in (r.files_pattern or "final_output")
 
 

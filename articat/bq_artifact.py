@@ -87,19 +87,19 @@ class BQArtifact(Artifact):
         object.__setattr__(
             r,
             "_staging_table",
-            f"{r.config.gcp_project}.{r.config.fs_tmp_prefix}.{r.id}_{partition_str}_{uuid.uuid4()}",
+            f"{r.config().gcp_project()}.{r.config().fs_tmp_prefix()}.{r.id}_{partition_str}_{uuid.uuid4()}",
         )
 
         partition_str = r.partition.strftime(BQArtifact._bq_partition_date_format)
         if r.is_dev():
-            r.table_id = f"{r.config.gcp_project}.{r.config.bq_dev_dataset}.{r.id}${partition_str}"
+            r.table_id = f"{r.config().gcp_project()}.{r.config().bq_dev_dataset()}.{r.id}${partition_str}"
         else:
             logger.warning(
                 "Production BigQuery artifacts are not supported yet, data will be saved to "
-                f"the development dataset: {r.config.bq_dev_dataset}."
+                f"the development dataset: {r.config().bq_dev_dataset()}."
             )
             # r.table_id = f"{r.config.gcp_project}.{r._dataset}.{r.id}${partition_str}"
-            r.table_id = f"{r.config.gcp_project}.{r.config.bq_dev_dataset}.{r.id}${partition_str}"
+            r.table_id = f"{r.config().gcp_project()}.{r.config().bq_dev_dataset()}.{r.id}${partition_str}"
         logger.debug(f"Final data of {r.spec()} will end up in {r.table_id}")
         return r
 
@@ -118,7 +118,7 @@ class BQArtifact(Artifact):
         assert self.table_id, "Destination table id must be set"
         assert self.partition, "Partition must be set"
 
-        bq_client = self.bq_client(self.config.gcp_project)
+        bq_client = self.bq_client(self.config().gcp_project())
 
         staged_table = bq_client.get_table(self._staging_table)
 

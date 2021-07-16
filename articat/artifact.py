@@ -160,7 +160,7 @@ class Artifact(ConfigMixin, BaseModel):
         )
 
     def _catalog(self) -> "Type[Catalog]":
-        return self.config.catalog
+        return self.config().catalog()
 
     def _exclude_private_fields(self) -> Set[str]:
         # TODO: remove since the config is in place
@@ -330,7 +330,7 @@ class Artifact(ConfigMixin, BaseModel):
         if (
             not hasattr(self, "__test__")
             and not self._is_dev_mode(self.id)
-            and self.config.mode != ArticatMode.local
+            and self.config().mode() != ArticatMode.local
         ):
             if "RS_PROD" not in environ:
                 raise ValueError(

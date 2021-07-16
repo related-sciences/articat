@@ -71,7 +71,7 @@ class CLI:
                 "metadata": ...,
             }
         )
-        for e in ArticatConfig.catalog.lookup(
+        for e in ArticatConfig.catalog().lookup(
             id=id,
             partition_dt_start=partition_dt
             or datetime.fromisoformat(date.min.isoformat()),

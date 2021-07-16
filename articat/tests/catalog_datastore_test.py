@@ -34,7 +34,7 @@ def test_simple_happy_path_catalog(uid: ID) -> None:
     if r.files_pattern is None:
         pytest.fail("files_pattern should be set")
     else:
-        assert TestFSArtifact.config.fs_prod_prefix in r.files_pattern
+        assert TestFSArtifact.config().fs_prod_prefix() in r.files_pattern
         assert "ala" in Path(r.files_pattern).read_text()
         assert Path(r.files_pattern).parent.joinpath("_SUCCESS").exists()
         manifest_path = Path(r.files_pattern).parent.joinpath("_MANIFEST.json")

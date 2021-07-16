@@ -12,7 +12,7 @@ pytestmark = pytest.mark.datastore_emulated
 
 def test_config_overwrite(uid: str):
     # Default Artifacts use default config
-    assert ArticatConfig.fs_prod_prefix in TestFSArtifact.config.fs_prod_prefix
+    assert ArticatConfig.fs_prod_prefix() in TestFSArtifact.config().fs_prod_prefix()
 
     custom_text = "SUPER_CUSTOM"
 
@@ -36,8 +36,8 @@ def test_config_overwrite(uid: str):
     a1 = TestFSArtifact.partitioned(uid, today)
     a2 = TestFSArtifact.partitioned(f"{uid}_2", today, config=custom_config)
 
-    assert custom_text not in a1.config.fs_prod_prefix
-    assert custom_text in a2.config.fs_prod_prefix
+    assert custom_text not in a1.config().fs_prod_prefix()
+    assert custom_text in a2.config().fs_prod_prefix()
 
     dummy_path = Path(tempfile.mktemp())
     dummy_path.touch()

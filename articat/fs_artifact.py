@@ -80,11 +80,11 @@ class FSArtifact(Artifact):
         # main dir from the files_pattern
         assert self.files_pattern is not None
         if self.is_dev():
-            no_prefix = self.files_pattern.replace(self.config.fs_dev_prefix, "")
-            return self.config.fs_dev_prefix + "/".join(no_prefix.split("/")[:4])
+            no_prefix = self.files_pattern.replace(self.config().fs_dev_prefix(), "")
+            return self.config().fs_dev_prefix() + "/".join(no_prefix.split("/")[:4])
         else:
-            no_prefix = self.files_pattern.replace(self.config.fs_prod_prefix, "")
-            return self.config.fs_prod_prefix + "/".join(no_prefix.split("/")[:3])
+            no_prefix = self.files_pattern.replace(self.config().fs_prod_prefix(), "")
+            return self.config().fs_prod_prefix() + "/".join(no_prefix.split("/")[:3])
 
     def joinpath(self, *parts: str) -> str:
         """Helper to easily construct paths within the Artifact"""
@@ -202,15 +202,11 @@ class FSArtifact(Artifact):
 
         partition_path = self.created.strftime(Artifact._partition_str_format)
         if tmp:
-            return (
-                f"{self.config.fs_tmp_prefix}/{self.id}/{partition_path}/{uuid.uuid4()}"
-            )
+            return f"{self.config().fs_tmp_prefix()}/{self.id}/{partition_path}/{uuid.uuid4()}"
         elif self.is_dev():
-            return (
-                f"{self.config.fs_dev_prefix}/{self.id}/{partition_path}/{uuid.uuid4()}"
-            )
+            return f"{self.config().fs_dev_prefix()}/{self.id}/{partition_path}/{uuid.uuid4()}"
         else:
-            return f"{self.config.fs_prod_prefix}/{self.id}/{partition_path}/{uuid.uuid4()}"
+            return f"{self.config().fs_prod_prefix()}/{self.id}/{partition_path}/{uuid.uuid4()}"
 
     @staticmethod
     def _get_protocol(path: Optional[str]) -> str:

@@ -73,7 +73,7 @@ class TestFSArtifactMixin(BASE_CLASS):
         with cls.partitioned(uid, partition=partition, dev=dev) as a:
             with fsspec.open(a.joinpath("output.txt"), "w") as f:
                 f.write("ala ma kota")
-            assert ArticatConfig.fs_tmp_prefix in a.staging_file_prefix
+            assert ArticatConfig.fs_tmp_prefix() in a.staging_file_prefix
             a.files_pattern = f"{a.staging_file_prefix}/output.txt"
             yield a
 

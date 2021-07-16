@@ -14,15 +14,16 @@ class CatalogLocal(Catalog):
     """
     This is local flavour of the Catalog. This implementation is purely for
     exploration, test, presentation etc. This implementation is inefficient
-    by design. Do not use for production use cases.
+    by design. Do not use for production use cases. This implementation is
+    not thread-safe.
     """
 
     @classmethod
     def _get_db(cls) -> dbm._Database:
         # NOTE: this is inefficient, but that's fine for the purpose of the local mode
-        Path(cls.config.local_db_dir).mkdir(parents=True, exist_ok=True)
+        Path(cls.config().local_db_dir()).mkdir(parents=True, exist_ok=True)
         return dbm.open(
-            Path(cls.config.local_db_dir).joinpath("store").as_posix(), flag="c"
+            Path(cls.config().local_db_dir()).joinpath("store").as_posix(), flag="c"
         )
 
     @classmethod

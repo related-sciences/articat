@@ -19,7 +19,7 @@ from articat.utils.utils import download_artifact, dummy_unsafe_cache, get_repo_
 
 def get_source_path_that_looks_like_path_from_catalog() -> Path:
     p = Path(
-        tempfile.mkdtemp(dir=TestFSArtifact.config.fs_prod_prefix, suffix="__ID__")
+        tempfile.mkdtemp(dir=TestFSArtifact.config().fs_prod_prefix(), suffix="__ID__")
     ).joinpath("__PART__")
     p.mkdir(parents=True)
     return p

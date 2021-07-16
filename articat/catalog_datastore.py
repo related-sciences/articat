@@ -24,17 +24,17 @@ class CatalogDatastore(Catalog):
     def _client(
         cls, project: Optional[str] = None, namespace: Optional[str] = None
     ) -> datastore.Client:
-        project = project or cls.config.gcp_project
+        project = project or cls.config().gcp_project()
         return datastore.Client(project=project, namespace=namespace)
 
     @classmethod
     def _dev_client(cls, project: Optional[str] = None) -> datastore.Client:
-        project = project or cls.config.gcp_project
+        project = project or cls.config().gcp_project()
         return cls._client(project=project, namespace="dev")
 
     @classmethod
     def _retired_client(cls, project: Optional[str] = None) -> datastore.Client:
-        project = project or cls.config.gcp_project
+        project = project or cls.config().gcp_project()
         return cls._client(project=project, namespace="retired")
 
     @classmethod
