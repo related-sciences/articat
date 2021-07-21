@@ -6,6 +6,12 @@ Minimal metadata catalog to store and retrieve metadata about data artifacts.
 
 ## Getting started
 
+At a high level, *articat* is simply a key-value store. Value being the Artifact metadata.
+Key a.k.a. "Artifact Spec" being:
+ * globally unique `id`
+ * optional timestamp: `partition`
+ * optional arbitrary string: `version`
+
 To publish a file system Artifact (`FSArtifact`):
 
 ```python
@@ -31,7 +37,8 @@ with FSArtifact.partitioned("foo", partition=date(1643, 1, 4)) as fsa:
     # are configurable (see below)
     fsa.stage(data_path)
 
-    # Additionally let's provide some description:
+    # Additionally let's provide some description, here we could also
+    # save some extra arbitrary metadata like model metrics, hyperparameters etc.
     fsa.metadata.description = "Answer to the Ultimate Question of Life, the Universe, and Everything"
 ```
 
@@ -60,6 +67,7 @@ Path(fsa.joinpath("data")).read_text() # 42
  * data publishing utils builtin
  * IO/data format agnostic
  * immutable metadata
+ * development mode
 
 ## Artifact flavours
 
@@ -68,14 +76,23 @@ Currently available Artifact flavours:
  * `BQArtifact`: metadata/utils for BigQuery tables
  * `NotebookArtifact`: metadata/utils for Jupyter Notebooks
 
-## Mode
+## Development mode
+
+To ease development of Artifacts, *articat* supports development/dev mode.
+Development Artifact can be indicated by `dev` parameter (preferred), or
+`_dev` prefix in the Artifact `id`. Dev mode supports:
+ * overwriting Artifact metadata
+ * configure separate locations (e.g. `dev_prefix` for `FSArtifact`), with
+   potentially different retention periods etc
+
+## Backend
 
  * `local`: mostly for testing/demo, metadata is stored locally (configurable, default: `~/.config/articat/local`)
  * `gcp_datastore`: metadata is stored in the Google Cloud Datastore
 
 ## Configuration
 
-`articat` configuration can be provided in the API, or configuration files. By default configuration
+*articat* configuration can be provided in the API, or configuration files. By default configuration
 is loaded from `~/.config/articat/articat.cfg` and `articat.cfg` in current working directory. You
 can also point at the configuration file via environment variable `ARTICAT_CONFIG`.
 
