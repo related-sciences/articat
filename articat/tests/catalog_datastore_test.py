@@ -3,9 +3,10 @@ from pathlib import Path
 from typing import List, cast
 
 import pytest
+from _pytest.monkeypatch import MonkeyPatch
 from dateutil.tz import UTC
 
-from articat.artifact import ID, Metadata
+from articat.artifact import EXECUTION_URL_ENV_NAME, ID, Metadata
 from articat.fs_artifact import FSArtifact
 from articat.tests.utils import (
     TestCatalog,
@@ -122,28 +123,34 @@ def test_catalog_lookup__all(uid: ID) -> None:
     assert len(list(TestCatalog.lookup())) >= 2
 
 
-def test_catalog_lookup__metadata(uid: ID) -> None:
-    write_a_couple_of_partitions(f"{uid}foobar", 2)
-    with TestFSArtifact.dummy_versioned_ctx(uid, "0.1.2") as a:
-        a.metadata = Metadata(
-            arbitrary={"a": "foo"}, schema_fields=["foo", "bar", "baz"]
-        )
+def test_catalog_lookup__metadata(uid: ID, monkeypatch: MonkeyPatch) -> None:
+    with monkeypatch.context() as m:
+        m.setenv(EXECUTION_URL_ENV_NAME, "http://wwww.url-to-articat-exe.com")
+        write_a_couple_of_partitions(f"{uid}foobar", 2)
+        with TestFSArtifact.dummy_versioned_ctx(uid, "0.1.2") as a:
+            a.metadata = Metadata(
+                arbitrary={"a": "foo"}, schema_fields=["foo", "bar", "baz"]
+            )
 
-    with TestFSArtifact.dummy_versioned_ctx(uid, "0.1.1") as a:
-        a.metadata = Metadata(
-            arbitrary={"a": "foo", "b": "bar"},
-            schema_fields=["foo", "bar"],
-        )
+        with TestFSArtifact.dummy_versioned_ctx(uid, "0.1.1") as a:
+            a.metadata = Metadata(
+                arbitrary={"a": "foo", "b": "bar"},
+                schema_fields=["foo", "bar"],
+            )
 
-    with TestFSArtifact.dummy_versioned_ctx(uid, "0.1.0") as a:
-        a.metadata.arbitrary.update({"a": "foo"})
-        a.metadata.schema_fields = ["foo", "bar"]
+        with TestFSArtifact.dummy_versioned_ctx(uid, "0.1.0") as a:
+            a.metadata.arbitrary.update({"a": "foo"})
+            a.metadata.schema_fields = ["foo", "bar"]
 
     assert len(list(TestCatalog.lookup(uid))) == 3
     (_1,) = tuple(TestCatalog.lookup(uid, version="0.1.0"))
     assert _1.metadata and _1.version == "0.1.0"
     assert "git_repo_url" in _1.metadata.arbitrary
     assert "git_head_hash" in _1.metadata.arbitrary
+    assert "execution_url" in _1.metadata.arbitrary
+    assert (
+        _1.metadata.arbitrary["execution_url"] == "http://wwww.url-to-articat-exe.com"
+    )
     assert (
         len(tuple(TestCatalog.lookup(uid, metadata=Metadata(schema_fields=["bar"]))))
         == 3

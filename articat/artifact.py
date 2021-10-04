@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import os
 import typing
 from datetime import date, datetime
 from os import environ
@@ -67,16 +68,15 @@ class Arbitrary(BaseModel):
     nrow: Optional[int]
     git_repo_url: Optional[str]
     git_head_hash: Optional[str]
-    call_site_relfname: Optional[str]
     call_site_lineno: Optional[int]
-    # pipeline_relfname is deprecated, use step_relfname
-    pipeline_relfname: Optional[str]
     step_relfname: Optional[str]
     task_relfname: Optional[str]
     bq_stage_load_job_id: Optional[str]
     """BQ job id used for staging BQ data"""
     bq_job_id: Optional[str]
     """BQ job id used to produce the final BQ data"""
+    execution_url: Optional[str]
+    """URL to the execution that created this Artifact (could be for example GitHub Action)"""
 
     def get_update_dict(self) -> Dict[str, Union[int, str]]:
         """
@@ -99,6 +99,11 @@ Version = str
 # NOTE: since `datetime` is also `date`, it's important that in
 #       the union `datetime` precedes `date`.
 Partition = Union[datetime, date]
+EXECUTION_URL_ENV_NAME = "ARTICAT_EXECUTION_URL"
+"""
+If this env variable is set, the value will be recorded inside the arbitrary
+dict. This could be for example URL to the GitHub Action workflow.
+"""
 T = TypeVar("T", bound="Artifact")
 
 
@@ -210,6 +215,13 @@ class Artifact(ConfigMixin, BaseModel):
         self.metadata.arbitrary.update(
             Arbitrary(git_repo_url=repo_url, git_head_hash=hash).get_update_dict()
         )
+
+    def __add_exe_info(self) -> None:
+        exe_url = os.environ.get(EXECUTION_URL_ENV_NAME)
+        if exe_url is not None:
+            self.metadata.arbitrary.update(
+                Arbitrary(execution_url=exe_url.strip()).get_update_dict()
+            )
 
     @classmethod
     def partitioned(
@@ -327,6 +339,7 @@ class Artifact(ConfigMixin, BaseModel):
         assert self.metadata.arbitrary is not None
 
         self.__add_git_info()
+        self.__add_exe_info()
 
         # Check if the artifact metadata already exists:
         try:
