@@ -12,7 +12,6 @@ from articat.tests.utils import (
     TestFSArtifact,
     write_a_couple_of_partitions,
 )
-from articat.utils.utils import get_call_site
 
 
 def test_large_arbitrary_entry(uid: ID) -> None:
@@ -28,23 +27,6 @@ def test_artifact_parse_extra_prop(uid: ID) -> None:
     TestFSArtifact.write_dummy_partitioned(uid, date.today())
     a_back = TestCatalog.get(uid, partition=date.today(), model=Artifact)
     assert getattr(a_back, "files_pattern")
-
-
-def test_catalog_record_loc(uid: ID) -> None:
-    k = "call_site_relfname"
-    with TestFSArtifact.dummy_versioned_ctx(uid, "0.1.0") as a:
-        assert k in a.metadata.arbitrary
-        assert a.metadata.arbitrary.pop(k)
-        assert k not in a.metadata.arbitrary
-        call_site = get_call_site(1)
-        assert call_site
-        this_file, this_line = call_site
-        assert this_file == __file__
-        a.record_loc()
-
-    a = TestCatalog.get(uid, version="0.1.0", model=TestFSArtifact)
-    assert a.metadata.arbitrary.get(k) == this_file
-    assert a.metadata.arbitrary.get("call_site_lineno") == this_line + 4
 
 
 def test_write_to_prod_on_non_prod_env_fails(uid: ID, monkeypatch: MonkeyPatch) -> None:

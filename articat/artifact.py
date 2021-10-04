@@ -192,28 +192,6 @@ class Artifact(ConfigMixin, BaseModel):
             #       dev flag instead of id to specify the dev mode
             return id
 
-    def _best_effort_tag_with_call_site(self: T) -> T:
-        """Best effort method to find relative location of the file that created
-        the artifact via partitioned or versioned, if anything unexpected happens
-        it will give up and no information about the call site is preserved. This
-        function only works when called from partitioned/versioned.
-        """
-        try:
-            from articat.utils.utils import get_call_site
-
-            call_site = get_call_site(frames_back=3)
-        except Exception:
-            logger.exception("Couldn't get call site")
-            call_site = None
-
-        if call_site:
-            fname, lineno = call_site
-            a = Arbitrary(
-                call_site_relfname=fname, call_site_lineno=lineno
-            ).get_update_dict()
-            self.metadata.arbitrary.update(a)
-        return self
-
     def __add_git_info(self) -> None:
         try:
             from articat.utils.utils import get_repo_and_hash
@@ -253,8 +231,7 @@ class Artifact(ConfigMixin, BaseModel):
         a = cls(id=Artifact._enforce_dev_mode(id, dev), partition=partition)
         if config is not None:
             a._config = config
-        assert isinstance(a, Artifact)
-        return a._best_effort_tag_with_call_site()
+        return a
 
     @classmethod
     def versioned(
@@ -276,17 +253,7 @@ class Artifact(ConfigMixin, BaseModel):
         a = cls(id=Artifact._enforce_dev_mode(id, dev), version=version)
         if config is not None:
             a._config = config
-        assert isinstance(a, Artifact)
-        return a._best_effort_tag_with_call_site()
-
-    def record_loc(self: T) -> T:
-        """
-        Records this call site, relative path within the repo, and line
-        number, this might be useful documentation of the Artifact. Keep
-        in mind that this is best effort method, it might fail to capture
-        that information, so you should never depend on it.
-        """
-        return self._best_effort_tag_with_call_site()
+        return a
 
     def spec(self) -> Dict[str, Union[ID, Partition, Version]]:
         """

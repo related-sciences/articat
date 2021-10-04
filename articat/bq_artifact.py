@@ -67,11 +67,7 @@ class BQArtifact(Artifact):
         # TODO (rav): add support for up to an hour resolution
         if partition.resolution != timedelta(days=1):
             raise ValueError("Partition resolution for BQ artifact must be a day")
-        return (
-            super()
-            .partitioned(id=id, partition=partition, dev=dev, config=config)
-            ._best_effort_tag_with_call_site()
-        )
+        return super().partitioned(id=id, partition=partition, dev=dev, config=config)
 
     def __enter__(self) -> "BQArtifact":
         r: BQArtifact = super().__enter__()
