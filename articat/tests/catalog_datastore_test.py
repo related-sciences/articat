@@ -7,7 +7,6 @@ from dateutil.tz import UTC
 
 from articat.artifact import ID, Metadata
 from articat.fs_artifact import FSArtifact
-from articat.tests import utils
 from articat.tests.utils import (
     TestCatalog,
     TestFSArtifact,
@@ -43,9 +42,6 @@ def test_simple_happy_path_catalog(uid: ID) -> None:
         manifest.partition = cast(datetime, manifest.partition).replace(tzinfo=UTC)
         manifest.created = cast(datetime, manifest.created).replace(tzinfo=UTC)
         assert manifest == r
-        # Artifact is created via a test helper in the utils, so the call site is there:
-        assert manifest.metadata.arbitrary.get("call_site_relfname") == utils.__file__
-        assert cast(int, manifest.metadata.arbitrary.get("call_site_lineno")) > 1
 
     assert len(list(TestCatalog.lookup(uid))) == 2
     assert len(list(TestCatalog.lookup(uid, partition_dt_start=today))) == 1
