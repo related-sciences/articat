@@ -83,7 +83,7 @@ class BQArtifact(Artifact):
         object.__setattr__(
             r,
             "_staging_table",
-            f"{r.config().gcp_project()}.{r.config().fs_tmp_prefix()}.{r.id}_{partition_str}_{uuid.uuid4()}",
+            f"{r.config().gcp_project()}.{r.config().bq_tmp_dataset}.{r.id}_{partition_str}_{uuid.uuid4()}",
         )
 
         partition_str = r.partition.strftime(BQArtifact._bq_partition_date_format)
