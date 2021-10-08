@@ -90,12 +90,7 @@ class BQArtifact(Artifact):
         if r.is_dev():
             r.table_id = f"{r.config().gcp_project()}.{r.config().bq_dev_dataset()}.{r.id}${partition_str}"
         else:
-            logger.warning(
-                "Production BigQuery artifacts are not supported yet, data will be saved to "
-                f"the development dataset: {r.config().bq_dev_dataset()}."
-            )
-            # r.table_id = f"{r.config.gcp_project}.{r._dataset}.{r.id}${partition_str}"
-            r.table_id = f"{r.config().gcp_project()}.{r.config().bq_dev_dataset()}.{r.id}${partition_str}"
+            r.table_id = f"{r.config().gcp_project()}.{r.config().bq_prod_dataset()}.{r.id}${partition_str}"
         logger.debug(f"Final data of {r.spec()} will end up in {r.table_id}")
         return r
 
