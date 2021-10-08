@@ -130,6 +130,11 @@ class ArticatConfig:
         return self._config["bq"]["prod_dataset"]
 
     @class_or_instance_method
+    def bq_tmp_dataset(self) -> str:
+        """BigQuery (BQ) temp dataset, for `gcp` mode only"""
+        return self._config["bq"]["tmp_dataset"]
+
+    @class_or_instance_method
     def bq_dev_dataset(self) -> str:
         """BigQuery (BQ) development dataset, for `gcp` mode only"""
         return self._config["bq"]["dev_dataset"]
