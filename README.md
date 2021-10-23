@@ -124,3 +124,11 @@ You use `local` mode without configuration file. Available options:
 # production data BigQuery dataset
 # prod_dataset =
 ```
+
+## Our/example setup
+
+Below you can see a diagram of our setup, Articat is just one piece of our system, and solves a specific problem. This should give you an idea where it might fit into your environment:
+
+<p align="center">
+  <img src="https://docs.google.com/drawings/d/1wll4Q_PlKGHVu-C2IN8jUIxzFTD8jwFWnvwgFrvq2ls/export/png" alt="Our setup diagram"/>
+</p>
