@@ -322,7 +322,7 @@ class Artifact(ConfigMixin, BaseModel):
             raise ValueError("You should not set created field by yourself")
         self.created = datetime.utcnow()
         if self.partition is None:
-            self.partition = datetime.utcnow()
+            self.partition = datetime.utcnow().replace(microsecond=0)
         if self.metadata is None:
             self.metadata = Metadata()
         if self.metadata.arbitrary is None:
