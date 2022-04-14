@@ -21,3 +21,9 @@ def test_meta_artifact__happy_path(uid: ID) -> None:
     d0 = deps[0]
     assert d0.metadata.arbitrary["blah"] == 3.14
     assert a.metadata.arbitrary["blah"] == 42
+
+
+def test_meta_artifact__empty_browser_url(uid) -> None:
+    a = MetaArtifact.partitioned(uid)
+    assert a.browser_url() == ""
+    assert not a.browser_url()
