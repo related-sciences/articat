@@ -18,6 +18,7 @@ if TYPE_CHECKING:
 class ArticatMode(str, Enum):
     local = "local"
     gcp_datastore = "gcp_datastore"
+    test = "test"
 
 
 class ArticatConfig:
@@ -88,7 +89,7 @@ class ArticatConfig:
     @class_or_instance_method
     def mode(self) -> ArticatMode:
         """
-        Articat mode. Currently supported: `local`, `gcp`.
+        Articat mode. Currently supported: `local`, `gcp` and `test`.
         Defaults to: `local`
         """
         return ArticatMode(self._config.get("main", "mode", fallback=ArticatMode.local))
@@ -104,6 +105,10 @@ class ArticatConfig:
             from articat.catalog_datastore import CatalogDatastore
 
             return CatalogDatastore
+        elif self.mode() == ArticatMode.test:
+            from articat.tests.utils import TestCatalog
+
+            return TestCatalog
         else:
             raise ValueError(f"Unknown catalog for mode: {self.mode}")
 

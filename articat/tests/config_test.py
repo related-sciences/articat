@@ -56,7 +56,7 @@ def test_config_overwrite(uid: str):
 def test_config_env_variable(monkeypatch: MonkeyPatch):
     test_config = ArticatConfig._config
     test_config_mode = ArticatConfig.mode()
-    assert test_config_mode == ArticatMode.gcp_datastore
+    assert test_config_mode == ArticatMode.test
 
     custom_config_path = Path(tempfile.mktemp())
     custom_config_path.write_text("[main]\n" "mode = local\n")

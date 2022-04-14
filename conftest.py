@@ -56,7 +56,7 @@ def get_test_config() -> Dict[str, Dict[str, Any]]:
     for d in ("tmp", "dev", "prod"):
         test_fs_prefix.joinpath(d).mkdir(parents=True, exist_ok=True)
     return {
-        "main": {"mode": "gcp_datastore"},
+        "main": {"mode": "test"},
         "gcp": {"project": "test-gcp-project"},
         "fs": {
             "tmp_prefix": test_fs_prefix.joinpath("tmp"),

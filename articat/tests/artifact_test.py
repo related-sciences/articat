@@ -32,6 +32,7 @@ def test_artifact_parse_extra_prop(uid: ID) -> None:
 def test_write_to_prod_on_non_prod_env_fails(uid: ID, monkeypatch: MonkeyPatch) -> None:
     with monkeypatch.context() as m:
         m.delattr(TestFSArtifact, "__test__")
+        m.setattr(TestFSArtifact.config(), "mode", lambda: "gcp")
         with pytest.raises(
             ValueError, match="your environment is missing ARTICAT_PROD"
         ):
