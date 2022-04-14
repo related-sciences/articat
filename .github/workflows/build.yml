@@ -9,7 +9,7 @@ on:
 
 
 jobs:
-  precommit:
+  test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
