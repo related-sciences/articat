@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from datetime import date
-from typing import Any, Iterable, Mapping, Optional, Type, TypeVar, Union, overload
+from typing import Any, Iterable, Mapping, Optional, TypeVar, Union, overload
 
 from articat.artifact import ID, Artifact, Metadata, Partition, Version
 from articat.config import ArticatConfig, ConfigMixin
@@ -15,7 +15,7 @@ T = TypeVar("T", bound=Artifact)
 class Catalog(ConfigMixin):
     """RS Data Catalog"""
 
-    _config: Union[Type[ArticatConfig], ArticatConfig] = ArticatConfig
+    _config: Union[type[ArticatConfig], ArticatConfig] = ArticatConfig
 
     @classmethod
     @overload
@@ -46,7 +46,7 @@ class Catalog(ConfigMixin):
 
     @classmethod
     @overload
-    def get(cls, id: ID, *, model: Type[T], dev: bool = False) -> T:
+    def get(cls, id: ID, *, model: type[T], dev: bool = False) -> T:
         ...
 
     @classmethod
@@ -55,7 +55,7 @@ class Catalog(ConfigMixin):
         cls,
         id: ID,
         *,
-        model: Type[T],
+        model: type[T],
         version: Optional[Version] = None,
         partition: Optional[Partition] = None,
         dev: bool = False,
@@ -70,7 +70,7 @@ class Catalog(ConfigMixin):
         *,
         version: Optional[Version] = None,
         partition: Optional[Partition] = None,
-        model: Type[Artifact] = Artifact,
+        model: type[Artifact] = Artifact,
         dev: bool = False,
     ):
         """
@@ -127,13 +127,13 @@ class Catalog(ConfigMixin):
 
     @classmethod
     @overload
-    def latest_partition(cls, id: ID, *, model: Type[T], dev: bool = False) -> T:
+    def latest_partition(cls, id: ID, *, model: type[T], dev: bool = False) -> T:
         ...
 
     # NOTE: no return type due to: https://github.com/python/mypy/issues/3737
     @classmethod
     def latest_partition(  # type: ignore[no-untyped-def]
-        cls, id: ID, *, model: Type[Artifact] = Artifact, dev: bool = False
+        cls, id: ID, *, model: type[Artifact] = Artifact, dev: bool = False
     ):
         try:
             return next(
@@ -171,7 +171,7 @@ class Catalog(ConfigMixin):
         cls,
         id: Optional[ID] = None,
         *,
-        model: Type[T],
+        model: type[T],
         partition_dt_start: Optional[Partition] = None,
         partition_dt_end: Optional[Partition] = None,
         version: Optional[Version] = None,
@@ -192,7 +192,7 @@ class Catalog(ConfigMixin):
         version: Optional[Version] = None,
         metadata: Optional[Metadata] = None,
         limit: Optional[int] = None,
-        model: Type[Artifact] = Artifact,
+        model: type[Artifact] = Artifact,
         dev: bool = False,
     ):
         """

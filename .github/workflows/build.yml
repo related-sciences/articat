@@ -30,10 +30,5 @@ jobs:
         gcloud components install --quiet beta cloud-datastore-emulator
         gcloud beta emulators datastore start --project foobar --host-port 0.0.0.0:8099 --consistency=1.0 --no-store-on-disk &
 
-    - name: Install deps
-      run: |
-        pip install -r requirements.txt -r requirements-dev.txt
-
-    - name: Run tests in Docker
-      run: |
-        pytest --color=yes --datastore_emulated
+    - run: pip install -r requirements.txt -r requirements-dev.txt
+    - run: pytest --color=yes --datastore_emulated

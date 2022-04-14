@@ -3,7 +3,7 @@ import uuid
 from datetime import date, timedelta
 from functools import lru_cache
 from types import TracebackType
-from typing import Any, ClassVar, Optional, Type
+from typing import Any, ClassVar, Optional
 
 from google.cloud import bigquery
 from google.cloud.exceptions import NotFound
@@ -96,7 +96,7 @@ class BQArtifact(Artifact):
 
     def __exit__(
         self,
-        exc_type: Optional[Type[BaseException]],
+        exc_type: Optional[type[BaseException]],
         exc_val: Optional[BaseException],
         exc_tb: Optional[TracebackType],
     ) -> None:

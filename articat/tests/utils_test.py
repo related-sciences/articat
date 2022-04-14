@@ -2,7 +2,6 @@ import subprocess
 import tempfile
 from datetime import datetime
 from pathlib import Path
-from typing import List
 
 import pytest
 from _pytest.monkeypatch import MonkeyPatch
@@ -192,7 +191,7 @@ def test_git__get_repo_curr_repo():
 
 
 def test_git__dirty_tree():
-    def run_git(cmd: List[str], out: int = subprocess.DEVNULL) -> None:
+    def run_git(cmd: list[str], out: int = subprocess.DEVNULL) -> None:
         subprocess.check_call(["git"] + cmd, stderr=out, stdout=out)
 
     repo_dir = tempfile.mkdtemp()

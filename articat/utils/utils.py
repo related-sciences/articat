@@ -6,7 +6,7 @@ import shutil
 import subprocess
 from hashlib import md5
 from pathlib import Path
-from typing import Optional, Tuple
+from typing import Optional
 
 import fsspec
 from fsspec import AbstractFileSystem
@@ -40,7 +40,7 @@ def _git_get_remote_url(remote: str) -> str:
     )
 
 
-def get_repo_and_hash(remote_location: Optional[str] = None) -> Tuple[str, str]:
+def get_repo_and_hash(remote_location: Optional[str] = None) -> tuple[str, str]:
     """
     Returns git remote repository URL and HEAD hash. If the tree at
     HEAD is dirty, the hash will include "-DIRTY" suffix. Expect the CWD
@@ -57,7 +57,7 @@ def get_repo_and_hash(remote_location: Optional[str] = None) -> Tuple[str, str]:
     return _git_get_remote_url(remote_location), head_hash
 
 
-def get_call_site(frames_back: int) -> Optional[Tuple[str, int]]:
+def get_call_site(frames_back: int) -> Optional[tuple[str, int]]:
     """
     Returns path of the call site file, and line number
 

@@ -49,7 +49,7 @@ class TestFSArtifactMixin(BASE_CLASS):
     @classmethod
     @contextmanager
     def dummy_versioned_ctx(
-        cls: Type[T], uid: ID, version: Version, dev: bool = False
+        cls: type[T], uid: ID, version: Version, dev: bool = False
     ) -> Iterator[T]:
         with cls.versioned(uid, version, dev=dev) as a:
             with fsspec.open(a.joinpath("output.txt"), "w") as f:
@@ -59,7 +59,7 @@ class TestFSArtifactMixin(BASE_CLASS):
 
     @classmethod
     def write_dummy_versioned(
-        cls: Type[T], uid: ID, version: Version, dev: bool = False
+        cls: type[T], uid: ID, version: Version, dev: bool = False
     ) -> T:
         with cls.dummy_versioned_ctx(uid, version, dev=dev) as a:
             ...
@@ -68,7 +68,7 @@ class TestFSArtifactMixin(BASE_CLASS):
     @classmethod
     @contextmanager
     def dummy_partitioned_ctx(
-        cls: Type[T], uid: ID, partition: Partition, dev: bool = False
+        cls: type[T], uid: ID, partition: Partition, dev: bool = False
     ) -> Iterator[T]:
         with cls.partitioned(uid, partition=partition, dev=dev) as a:
             with fsspec.open(a.joinpath("output.txt"), "w") as f:
@@ -79,7 +79,7 @@ class TestFSArtifactMixin(BASE_CLASS):
 
     @classmethod
     def write_dummy_partitioned(
-        cls: Type[T], uid: ID, partition: Partition, dev: bool = False
+        cls: type[T], uid: ID, partition: Partition, dev: bool = False
     ) -> T:
         with cls.dummy_partitioned_ctx(uid, partition, dev=dev) as a:
             ...

@@ -1,6 +1,6 @@
 from datetime import date, datetime, time, timedelta
 from pathlib import Path
-from typing import List, cast
+from typing import cast
 
 import pytest
 from _pytest.monkeypatch import MonkeyPatch
@@ -69,7 +69,7 @@ def test_catalog_lookup__ordered_partitions(uid: ID) -> None:
     all_parts = tuple(TestCatalog.lookup(uid, partition_dt_start=date.min))
     p = [x.partition for x in all_parts]
     assert len(p) == 10
-    assert sorted(cast(List[date], p), reverse=True) == p
+    assert sorted(cast(list[date], p), reverse=True) == p
 
 
 def test_catalog_lookup__limit_works(uid: ID) -> None:
@@ -180,7 +180,7 @@ def test_catalog_lookup__unordered_when_no_partition_requested(uid: ID) -> None:
     all_parts = tuple(TestCatalog.lookup(uid))
     p = [x.partition for x in all_parts]
     assert len(p) == 10
-    assert sorted(cast(List[date], p), reverse=True) != p
+    assert sorted(cast(list[date], p), reverse=True) != p
 
 
 def test_catalog_lookup__cant_lookup_by_both_partition_and_metadata(uid: ID) -> None:

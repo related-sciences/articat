@@ -7,7 +7,7 @@ from functools import lru_cache
 from multiprocessing.pool import ThreadPool
 from pathlib import Path
 from types import TracebackType
-from typing import ClassVar, List, Optional, Type, TypeVar
+from typing import ClassVar, Optional, TypeVar
 
 import fsspec
 from fsspec import AbstractFileSystem
@@ -148,7 +148,7 @@ class FSArtifact(Artifact):
         # files, as in thousands of files, when that becomes and issue, we
         # can optimize it.
         start = time.time()
-        output_files: List[str] = fs.glob(self.files_pattern)
+        output_files: list[str] = fs.glob(self.files_pattern)
         logger.debug(f"Temp output glob took: {time.time() - start} s")
 
         if len(output_files) == 0:
@@ -235,7 +235,7 @@ class FSArtifact(Artifact):
 
     def __exit__(
         self,
-        exc_type: Optional[Type[BaseException]],
+        exc_type: Optional[type[BaseException]],
         exc_val: Optional[BaseException],
         exc_tb: Optional[TracebackType],
     ) -> None:
