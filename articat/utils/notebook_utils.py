@@ -3,7 +3,7 @@ import tempfile
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, Mapping, cast
+from typing import Any, Mapping, cast
 
 from google.cloud.bigquery._helpers import _datetime_to_json
 from nbconvert import HTMLExporter
@@ -29,7 +29,7 @@ class PapermillOutput:
 
 
 def papermill_notebook(
-    notebook_path: Path, params: Dict[str, Any] = {}
+    notebook_path: Path, params: dict[str, Any] = {}
 ) -> PapermillOutput:
     """
     Uses papermill to execute notebook with potential parameters. Read the papermill documentation

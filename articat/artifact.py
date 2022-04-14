@@ -6,18 +6,7 @@ import typing
 from datetime import date, datetime
 from os import environ
 from types import TracebackType
-from typing import (
-    Any,
-    ClassVar,
-    Dict,
-    List,
-    Mapping,
-    Optional,
-    Set,
-    Type,
-    TypeVar,
-    Union,
-)
+from typing import Any, ClassVar, Mapping, Optional, Type, TypeVar, Union
 
 from google.cloud import datastore
 from google.cloud.datastore.helpers import entity_to_protobuf
@@ -37,9 +26,9 @@ logger = logging.getLogger(__name__)
 class Metadata(BaseModel):
     spark_schema: Optional[str] = None
     """String representation of spark schema"""
-    schema_fields: Optional[List[str]] = None
+    schema_fields: Optional[list[str]] = None
     """List of fields in the schema"""
-    arbitrary: Dict[str, Any] = {}
+    arbitrary: dict[str, Any] = {}
     """
     Any arbitrary metadata of your choice, can be embedded dicts, lists etc.
     Valid types: https://cloud.google.com/appengine/docs/standard/python/datastore/entities#Properties_and_value_types
@@ -47,7 +36,7 @@ class Metadata(BaseModel):
     description: Optional[str] = None
     """Description"""
 
-    def add_spark_df_info(self, df: "pyspark.sql.DataFrame") -> "Metadata":
+    def add_spark_df_info(self, df: pyspark.sql.DataFrame) -> Metadata:
         """Add information from Spark Dataframe"""
         if self.arbitrary is not None:
             self.arbitrary.update({"nrow": df.count()})
@@ -78,7 +67,7 @@ class Arbitrary(BaseModel):
     execution_url: Optional[str]
     """URL to the execution that created this Artifact (could be for example GitHub Action)"""
 
-    def get_update_dict(self) -> Dict[str, Union[int, str]]:
+    def get_update_dict(self) -> dict[str, Union[int, str]]:
         """
         Returns dict with only the explicitly set fields.
 
@@ -137,7 +126,7 @@ class Artifact(ConfigMixin, BaseModel):
     # Note: this field is used to carry retired entity, it's not serialized
     _partition_str_format: ClassVar[str] = "%Y%m%dT%H%M%S"
     # string format for partition used in paths etc
-    _config: Union[ArticatConfig, Type[ArticatConfig]] = ArticatConfig
+    _config: Union[ArticatConfig, type[ArticatConfig]] = ArticatConfig
 
     @validator("partition")
     def partition_must_be_datetime(cls, v: Optional[Partition]) -> Optional[datetime]:
@@ -153,7 +142,7 @@ class Artifact(ConfigMixin, BaseModel):
         """Returns URL of the resource associated with this artifact"""
         raise NotImplementedError()
 
-    def build(self) -> "Artifact":
+    def build(self) -> Artifact:
         """
         This method takes all the information provided in the current artifact
         and might decide to add more, for example for file based artifact,
@@ -164,10 +153,10 @@ class Artifact(ConfigMixin, BaseModel):
             "use one of the concrete Artifact classes"
         )
 
-    def _catalog(self) -> "Type[Catalog]":
+    def _catalog(self) -> Type[Catalog]:
         return self.config().catalog()
 
-    def _exclude_private_fields(self) -> Set[str]:
+    def _exclude_private_fields(self) -> set[str]:
         # TODO: remove since the config is in place
         return {f for f in self.__dict__ if f.startswith("_")}
 
@@ -225,7 +214,7 @@ class Artifact(ConfigMixin, BaseModel):
 
     @classmethod
     def partitioned(
-        cls: Type[T],
+        cls: type[T],
         id: ID,
         partition: Optional[Partition] = None,
         *,
@@ -247,7 +236,7 @@ class Artifact(ConfigMixin, BaseModel):
 
     @classmethod
     def versioned(
-        cls: Type[T],
+        cls: type[T],
         id: ID,
         version: Version,
         *,
@@ -267,7 +256,7 @@ class Artifact(ConfigMixin, BaseModel):
             a._config = config
         return a
 
-    def spec(self) -> Dict[str, Union[ID, Partition, Version]]:
+    def spec(self) -> dict[str, Union[ID, Partition, Version]]:
         """
         Artifact spec is enough information to uniquely identify this
         artifact up to the partition/version. Useful to debug messages
@@ -277,7 +266,7 @@ class Artifact(ConfigMixin, BaseModel):
         assert isinstance(r, dict)
         return r
 
-    def fetch(self: T, catalog: "Optional[Type[Catalog]]" = None) -> T:
+    def fetch(self: T, catalog: Optional[Type[Catalog]] = None) -> T:
         """
         When Artifact is used as a "spec", it doesn't have full information,
         use this method to fetch all the metadata from the Catalog.
@@ -292,7 +281,7 @@ class Artifact(ConfigMixin, BaseModel):
             model=self.__class__,
         )
 
-    def record_deps(self: T, *deps: "Artifact") -> T:
+    def record_deps(self: T, *deps: Artifact) -> T:
         """Record artifact's dependencies. Users can record deps using multiple
         calls to record_deps to appends deps"""
         assert isinstance(self, Artifact)
@@ -373,7 +362,7 @@ class Artifact(ConfigMixin, BaseModel):
 
     def __exit__(
         self,
-        exc_type: Optional[Type[BaseException]],
+        exc_type: Optional[type[BaseException]],
         exc_val: Optional[BaseException],
         exc_tb: Optional[TracebackType],
     ) -> None:

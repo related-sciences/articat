@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from functools import partial, update_wrapper
-from typing import Callable, Generic, Optional, Type, TypeVar
+from typing import Callable, Generic, Optional, TypeVar
 
 T_OUT = TypeVar("T_OUT")
 T_DECO = TypeVar("T_DECO")
@@ -38,7 +38,7 @@ class class_or_instance_method(Generic[T_OUT]):
         self.org_method = method
 
     def __get__(
-        self, instance: Optional[T_DECO], cls: Type[T_DECO]
+        self, instance: Optional[T_DECO], cls: type[T_DECO]
     ) -> Callable[[], T_OUT]:
         self_or_cls = instance or cls
         wrapper = partial(self.org_method, self_or_cls)

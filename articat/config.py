@@ -195,9 +195,9 @@ class ArticatConfig:
 class ConfigMixin:
     """ArticatConfig mixin/trait"""
 
-    _config: Union[Type[ArticatConfig], ArticatConfig]
+    _config: Union[type[ArticatConfig], ArticatConfig]
 
     @class_or_instance_method
-    def config(self) -> Union[Type[ArticatConfig], ArticatConfig]:
+    def config(self) -> Union[type[ArticatConfig], ArticatConfig]:
         """Get Articat config object"""
         return self._config

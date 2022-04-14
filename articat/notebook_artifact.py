@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 import fsspec
 from gcsfs import GCSFileSystem
@@ -47,7 +47,7 @@ class NotebookArtifact(FSArtifact):
         return self
 
     def stage_notebook(
-        self, notebook_path: PathType, params: Dict[str, Any] = {}
+        self, notebook_path: PathType, params: dict[str, Any] = {}
     ) -> "NotebookArtifact":
         """
         Allows to easily stage a notebook within this artifact. It saves the original
