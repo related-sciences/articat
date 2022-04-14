@@ -19,7 +19,7 @@ class MetaArtifact(Artifact):
 
     def browser_url(self) -> str:
         """MetaArtifact doesn't really have a proper URL website to open"""
-        return "https://github.com/related-sciences/articat/issues/33"
+        return ""
 
     def build(self) -> "Artifact":
         return self
