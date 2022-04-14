@@ -73,9 +73,12 @@ class FSArtifact(Artifact):
         """
         # to not worry about presence of scheme, we remove the prefix
         # and add it back
-        if self.files_dir:
+        if self._file_prefix is not None:
+            return self._file_prefix
+        elif self.files_dir:
             return self.files_dir
-        # TODO: remove this code path
+        # TODO: remove this code path, for this to be safe to remove
+        #       we need to update legacy artifacts first (or remove them)
         # This is the legacy handling of the main_dir, where we gather
         # main dir from the files_pattern
         assert self.files_pattern is not None
