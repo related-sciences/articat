@@ -306,10 +306,12 @@ class Artifact(ConfigMixin, BaseModel):
         return self
 
     def __enter__(self: T) -> T:
+        # TODO (rav): this should be refactored and lean more on the config
         if (
             not hasattr(self, "__test__")
             and not self._is_dev_mode(self.id)
             and self.config().mode() != ArticatMode.local
+            and self.config().mode() != ArticatMode.test
         ):
             if "ARTICAT_PROD" not in environ:
                 raise ValueError(
