@@ -26,6 +26,7 @@ def test_fs_artifact_join_paths_works(uid: ID) -> None:
         with fsspec.open(p, "w") as f:
             f.write("ala ma kota")
         a.files_pattern = None
+        assert a.main_dir == a.staging_file_prefix
         assert p == f"{a.staging_file_prefix}/data.dat"
     assert a._file_prefix is None
     p = a.joinpath("data.dat")
