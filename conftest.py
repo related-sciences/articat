@@ -8,7 +8,7 @@ import pytest
 from _pytest.config import Config
 from _pytest.config.argparsing import Parser
 
-from articat.config import ArticatConfig
+from articat.config import ArticatConfig, ArticatMode
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +56,7 @@ def get_test_config() -> Dict[str, Dict[str, Any]]:
     for d in ("tmp", "dev", "prod"):
         test_fs_prefix.joinpath(d).mkdir(parents=True, exist_ok=True)
     return {
-        "main": {"mode": "test"},
+        "main": {"mode": f"{ArticatMode.test}"},
         "gcp": {"project": "test-gcp-project"},
         "fs": {
             "tmp_prefix": test_fs_prefix.joinpath("tmp"),
