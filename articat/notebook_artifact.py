@@ -2,6 +2,7 @@ from typing import Any, Optional
 
 import fsspec
 from gcsfs import GCSFileSystem
+from traitlets.config import Config
 
 from articat.fs_artifact import FSArtifact
 from articat.utils.notebook_utils import papermill_notebook
@@ -47,14 +48,17 @@ class NotebookArtifact(FSArtifact):
         return self
 
     def stage_notebook(
-        self, notebook_path: PathType, params: dict[str, Any] = {}
+        self,
+        notebook_path: PathType,
+        params: dict[str, Any] = {},
+        exporter_config: Optional[Config] = None,
     ) -> "NotebookArtifact":
         """
         Allows to easily stage a notebook within this artifact. It saves the original
         notebook (with original name), the executed notebook with _executed suffix, and
         the HTML output in `output.html`.
         """
-        nb_out = papermill_notebook(to_pathlib(notebook_path), params)
+        nb_out = papermill_notebook(to_pathlib(notebook_path), params, exporter_config)
         fsspec_copyfile(
             nb_out.notebook_src.as_posix(), self.joinpath(nb_out.notebook_src.name)
         )
