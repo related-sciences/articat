@@ -3,13 +3,14 @@ import tempfile
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Mapping, cast
+from typing import Any, Mapping, Optional, cast
 
 from google.cloud.bigquery._helpers import _datetime_to_json
 from nbconvert import HTMLExporter
 from nbformat.v4 import nbjson
 from papermill import execute_notebook
 from papermill.translators import PythonTranslator, papermill_translators
+from traitlets.config import Config
 
 from articat.artifact import Artifact
 
@@ -29,7 +30,9 @@ class PapermillOutput:
 
 
 def papermill_notebook(
-    notebook_path: Path, params: dict[str, Any] = {}
+    notebook_path: Path,
+    params: dict[str, Any] = {},
+    exporter_config: Optional[Config] = None,
 ) -> PapermillOutput:
     """
     Uses papermill to execute notebook with potential parameters. Read the papermill documentation
@@ -57,7 +60,7 @@ def papermill_notebook(
         log_output=True,
     )
 
-    html_exporter = HTMLExporter()
+    html_exporter = HTMLExporter(config=exporter_config)
     html_body, resources = html_exporter.from_notebook_node(nb_node)
 
     notebook_html_path = tmp_dir.joinpath("output.html")
