@@ -269,5 +269,7 @@ class FSArtifact(Artifact):
                 recursive=True,
             )
         else:
+            assert local_path.is_file(), "Must be a single regular file or directory"
             fs.upload(local_path.as_posix(), self.joinpath(local_path.name))
+            self.files_pattern = self.joinpath(local_path.name)
         return self
