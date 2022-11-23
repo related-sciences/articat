@@ -195,6 +195,7 @@ class FSArtifact(Artifact):
             assert fs.exists(
                 f"{actual_prefix}/_SUCCESS"
             ), "We could not create a SUCCESS marker and it does not exist"
+        object.__setattr__(self, "_file_prefix", None)
         return self
 
     def _get_file_prefix(self, tmp: bool = True) -> str:
@@ -243,7 +244,6 @@ class FSArtifact(Artifact):
         exc_tb: Optional[TracebackType],
     ) -> None:
         super().__exit__(exc_type, exc_val, exc_tb)
-        object.__setattr__(self, "_file_prefix", None)
 
     def browser_url(self) -> str:
         if self.main_dir.startswith("gs://"):
