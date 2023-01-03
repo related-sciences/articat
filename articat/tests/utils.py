@@ -1,10 +1,11 @@
 import datetime
 import os
+from collections.abc import Iterator
 from contextlib import contextmanager
 from datetime import date, timedelta
 from functools import lru_cache
 from random import shuffle
-from typing import TYPE_CHECKING, ClassVar, Iterator, Optional, Type, TypeVar
+from typing import TYPE_CHECKING, ClassVar, Type, TypeVar
 
 import fsspec
 from google.cloud import datastore
@@ -24,7 +25,7 @@ class TestCatalog(CatalogDatastore):
     @classmethod
     @lru_cache
     def _client(
-        cls, project: str = "foobar", namespace: Optional[str] = None
+        cls, project: str = "foobar", namespace: str | None = None
     ) -> datastore.Client:
         os.environ["DATASTORE_EMULATOR_HOST"] = "127.0.0.1:8099"
         return datastore.Client(project=project, namespace=namespace)
@@ -50,7 +51,11 @@ class TestFSArtifactMixin(BASE_CLASS):
     @classmethod
     @contextmanager
     def dummy_versioned_ctx(
-        cls: type[T], uid: ID, version: Version, dev: bool = False, partition: Optional[Partition] = None
+        cls: type[T],
+        uid: ID,
+        version: Version,
+        dev: bool = False,
+        partition: Partition | None = None,
     ) -> Iterator[T]:
         with cls.versioned(uid, version, dev=dev) as a:
             if partition is not None:
@@ -62,7 +67,11 @@ class TestFSArtifactMixin(BASE_CLASS):
 
     @classmethod
     def write_dummy_versioned(
-        cls: type[T], uid: ID, version: Version, dev: bool = False, partition: Optional[Partition] = None
+        cls: type[T],
+        uid: ID,
+        version: Version,
+        dev: bool = False,
+        partition: Partition | None = None,
     ) -> T:
         with cls.dummy_versioned_ctx(uid, version, dev=dev, partition=partition) as a:
             ...

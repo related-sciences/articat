@@ -2,10 +2,11 @@ import logging
 import os
 import tempfile
 import warnings
+from collections.abc import Mapping, Sequence
 from configparser import ConfigParser
 from enum import Enum
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Mapping, Optional, Sequence, Type, Union
+from typing import TYPE_CHECKING, Any, Type
 
 from articat.utils.class_or_instance_method import class_or_instance_method
 
@@ -60,7 +61,7 @@ class ArticatConfig:
     @classmethod
     def register_config(
         cls,
-        config_paths: Optional[Sequence[str]] = None,
+        config_paths: Sequence[str] | None = None,
         config_dict: Mapping[str, Mapping[str, Any]] = {},
     ) -> "Type[ArticatConfig]":
         """
@@ -195,9 +196,9 @@ class ArticatConfig:
 class ConfigMixin:
     """ArticatConfig mixin/trait"""
 
-    _config: Union[type[ArticatConfig], ArticatConfig]
+    _config: type[ArticatConfig] | ArticatConfig
 
     @class_or_instance_method
-    def config(self) -> Union[type[ArticatConfig], ArticatConfig]:
+    def config(self) -> type[ArticatConfig] | ArticatConfig:
         """Get Articat config object"""
         return self._config

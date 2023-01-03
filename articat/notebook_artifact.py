@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any
 
 import fsspec
 from gcsfs import GCSFileSystem
@@ -30,7 +30,7 @@ class NotebookArtifact(FSArtifact):
             return super().browser_url()
 
     def stage_rendered_notebook(
-        self, report_path: PathType, filename: Optional[str] = "output.html"
+        self, report_path: PathType, filename: str | None = "output.html"
     ) -> "NotebookArtifact":
         """
         Stages pre-rendered notebook. Default filename is `output.html`, if you want to
@@ -51,7 +51,7 @@ class NotebookArtifact(FSArtifact):
         self,
         notebook_path: PathType,
         params: dict[str, Any] = {},
-        exporter_config: Optional[Config] = None,
+        exporter_config: Config | None = None,
     ) -> "NotebookArtifact":
         """
         Allows to easily stage a notebook within this artifact. It saves the original

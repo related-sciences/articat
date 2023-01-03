@@ -2,7 +2,7 @@ import logging
 import sys
 from datetime import date, datetime
 from pathlib import Path
-from typing import Literal, Optional
+from typing import Literal
 
 from articat.artifact import Artifact
 from articat.bq_artifact import BQArtifact
@@ -19,9 +19,9 @@ class CLI:
     def open(
         cls,
         *,
-        id: Optional[str] = None,
-        partition: Optional[str] = None,
-        version: Optional[str] = None,
+        id: str | None = None,
+        partition: str | None = None,
+        version: str | None = None,
     ) -> None:
         """
         Open URL associated with the Artifact.
@@ -43,10 +43,10 @@ class CLI:
     @staticmethod
     def lookup(
         *,
-        id: Optional[str] = None,
-        partition: Optional[str] = None,
-        version: Optional[str] = None,
-        limit: Optional[int] = None,
+        id: str | None = None,
+        partition: str | None = None,
+        version: str | None = None,
+        limit: int | None = None,
         no_trunc: bool = False,
         dev: bool = False,
         format: Literal["csv", "json"] = "json",
@@ -99,7 +99,7 @@ class CLI:
         version: str,
         description: str,
         dev: bool = False,
-        _test_artifact: Optional[FSArtifact] = None,
+        _test_artifact: FSArtifact | None = None,
     ) -> FSArtifact:
         """
         Ad-hoc dump of local data into the Catalog, creates a versioned FSArtifact.

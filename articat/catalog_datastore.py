@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Iterable
 from functools import lru_cache
-from typing import Iterable, Optional, TypeVar
+from typing import TypeVar
 
 from google.cloud import datastore
 from google.cloud.datastore import Client, Entity, Key
@@ -22,32 +23,32 @@ class CatalogDatastore(Catalog):
     @classmethod
     @lru_cache
     def _client(
-        cls, project: Optional[str] = None, namespace: Optional[str] = None
+        cls, project: str | None = None, namespace: str | None = None
     ) -> datastore.Client:
         project = project or cls.config().gcp_project()
         return datastore.Client(project=project, namespace=namespace)
 
     @classmethod
-    def _dev_client(cls, project: Optional[str] = None) -> datastore.Client:
+    def _dev_client(cls, project: str | None = None) -> datastore.Client:
         project = project or cls.config().gcp_project()
         return cls._client(project=project, namespace="dev")
 
     @classmethod
-    def _retired_client(cls, project: Optional[str] = None) -> datastore.Client:
+    def _retired_client(cls, project: str | None = None) -> datastore.Client:
         project = project or cls.config().gcp_project()
         return cls._client(project=project, namespace="retired")
 
     @classmethod
     def _lookup(
         cls,
-        id: Optional[ID] = None,
-        partition_dt_start: Optional[Partition] = None,
-        partition_dt_end: Optional[Partition] = None,
-        version: Optional[Version] = None,
-        metadata: Optional[Metadata] = None,
-        limit: Optional[int] = None,
+        id: ID | None = None,
+        partition_dt_start: Partition | None = None,
+        partition_dt_end: Partition | None = None,
+        version: Version | None = None,
+        metadata: Metadata | None = None,
+        limit: int | None = None,
         dev: bool = False,
-        client: Optional[Client] = None,
+        client: Client | None = None,
     ) -> Iterable[Entity]:
         id = Artifact._enforce_dev_mode(id, dev)
         if id and Artifact._is_dev_mode(id):
@@ -86,7 +87,9 @@ class CatalogDatastore(Catalog):
             query = client.query(kind="Partition", ancestor=client.key("Artifact", id))
         else:
             query = client.query(kind="Partition")
-        if version is None and (partition_dt_start is not None or partition_dt_end is not None):
+        if version is None and (
+            partition_dt_start is not None or partition_dt_end is not None
+        ):
             if (
                 partition_dt_start
                 and partition_dt_end

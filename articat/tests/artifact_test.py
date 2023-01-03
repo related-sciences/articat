@@ -1,4 +1,3 @@
-import time
 from datetime import date, datetime, timedelta
 
 import fsspec
@@ -127,5 +126,7 @@ def test_artifact_version_is_global(uid: ID) -> None:
     today, yesterday = date.today(), date.today() - timedelta(days=1)
 
     TestFSArtifact.write_dummy_versioned(uid, "0.1.0", partition=today)
-    with pytest.raises(ValueError, match="Catalog already has an entry for this artifact"):
+    with pytest.raises(
+        ValueError, match="Catalog already has an entry for this artifact"
+    ):
         TestFSArtifact.write_dummy_versioned(uid, "0.1.0", partition=yesterday)

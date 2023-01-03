@@ -1,8 +1,8 @@
 import os
 import shutil
+from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Iterator, Optional, Union
 
 import fsspec
 
@@ -21,8 +21,8 @@ def fsspec_copyfile(
     src: str,
     dst: str,
     length: int = 0,
-    src_compression: Optional[str] = None,
-    dst_compression: Optional[str] = None,
+    src_compression: str | None = None,
+    dst_compression: str | None = None,
 ) -> None:
     """
     Like `shutil.copyfile` but with support for `fsspec` paths
@@ -35,7 +35,7 @@ def fsspec_copyfile(
 
 
 @contextmanager
-def cwd(new_cwd: Union[str, Path]) -> Iterator[None]:
+def cwd(new_cwd: str | Path) -> Iterator[None]:
     """
     A context manager which changes the working directory to the given
     path, and then changes it back to its previous value on exit.
