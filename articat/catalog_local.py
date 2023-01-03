@@ -61,6 +61,9 @@ class CatalogLocal(Catalog):
                 if version is not None:
                     if a.version != version:
                         continue
+                    elif a.version == version:
+                        result.append(a.dict())
+                        break
                 if (
                     partition_dt_start is not None or partition_dt_end is not None
                 ) and a.partition is not None:
