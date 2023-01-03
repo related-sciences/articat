@@ -86,7 +86,7 @@ class CatalogDatastore(Catalog):
             query = client.query(kind="Partition", ancestor=client.key("Artifact", id))
         else:
             query = client.query(kind="Partition")
-        if partition_dt_start is not None or partition_dt_end is not None:
+        if version is None and (partition_dt_start is not None or partition_dt_end is not None):
             if (
                 partition_dt_start
                 and partition_dt_end

@@ -1,3 +1,4 @@
+import datetime
 import os
 from contextlib import contextmanager
 from datetime import date, timedelta
@@ -49,9 +50,11 @@ class TestFSArtifactMixin(BASE_CLASS):
     @classmethod
     @contextmanager
     def dummy_versioned_ctx(
-        cls: type[T], uid: ID, version: Version, dev: bool = False
+        cls: type[T], uid: ID, version: Version, dev: bool = False, partition: Optional[Partition] = None
     ) -> Iterator[T]:
         with cls.versioned(uid, version, dev=dev) as a:
+            if partition is not None:
+                a.partition = datetime.datetime.fromisoformat(partition.isoformat())
             with fsspec.open(a.joinpath("output.txt"), "w") as f:
                 f.write("ala ma kota")
             a.files_pattern = f"{a.staging_file_prefix}/output.txt"
@@ -59,9 +62,9 @@ class TestFSArtifactMixin(BASE_CLASS):
 
     @classmethod
     def write_dummy_versioned(
-        cls: type[T], uid: ID, version: Version, dev: bool = False
+        cls: type[T], uid: ID, version: Version, dev: bool = False, partition: Optional[Partition] = None
     ) -> T:
-        with cls.dummy_versioned_ctx(uid, version, dev=dev) as a:
+        with cls.dummy_versioned_ctx(uid, version, dev=dev, partition=partition) as a:
             ...
         return a
 
