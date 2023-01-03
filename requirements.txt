@@ -1,8 +1,8 @@
-fire>=0.4.0
-fsspec>=2021.7.0
-gcsfs>=2021.7.0
-google-cloud-bigquery>=1.11.1,<3.0.0dev
-google-cloud-datastore>=2.1.0,<3.0.0dev
-jupyterlab==2.2.0
-papermill>=2.3.3,<3.0.0dev
-pydantic>=1.8.0,<2.0.0dev
+fire >= 0.4
+fsspec >= 2021.7.0
+gcsfs >= 2021.7.0
+google-cloud-bigquery >= 1.11
+google-cloud-datastore >= 2.1
+jupyterlab ~= 3.0
+papermill >= 2.0
+pydantic ~= 1.8
