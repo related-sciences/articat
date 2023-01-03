@@ -28,7 +28,7 @@ jobs:
       # NOTE: this emulator is used by the tests below
       run: |
         gcloud components install --quiet beta cloud-datastore-emulator
-        gcloud beta emulators datastore start --project foobar --host-port 0.0.0.0:8099 --consistency=1.0 --no-store-on-disk &
+        gcloud beta emulators datastore start --project foobar --host-port 127.0.0.1:8099 --consistency=1.0 --no-store-on-disk &
 
     - run: pip install -r requirements.txt -r requirements-dev.txt
     - run: pytest --color=yes --datastore_emulated
