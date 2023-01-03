@@ -1,5 +1,3 @@
-from typing import Optional
-
 from articat import Artifact
 from articat.catalog import Catalog
 
@@ -10,7 +8,7 @@ class MetaArtifact(Artifact):
     def deps(
         self,
         fetch: bool = False,
-        catalog: Optional[type[Catalog]] = None,
+        catalog: type[Catalog] | None = None,
         dep_model_cls: type[Artifact] = Artifact,
     ) -> list[Artifact]:
         """

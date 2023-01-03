@@ -1,6 +1,7 @@
+from collections.abc import Iterator
 from datetime import date, datetime, time
 from pathlib import Path
-from typing import Any, Iterator
+from typing import Any
 
 from _pytest.capture import CaptureFixture
 from _pytest.monkeypatch import MonkeyPatch

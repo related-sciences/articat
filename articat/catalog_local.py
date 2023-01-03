@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import dbm
+from collections.abc import Iterable, Mapping
 from datetime import datetime
 from hashlib import md5
 from pathlib import Path
-from typing import Any, Iterable, Mapping, Optional
+from typing import Any
 
 from articat.artifact import ID, Artifact, Metadata, Partition, Version
 from articat.catalog import Catalog
@@ -41,12 +42,12 @@ class CatalogLocal(Catalog):
     @classmethod
     def _lookup(
         cls,
-        id: Optional[ID] = None,
-        partition_dt_start: Optional[Partition] = None,
-        partition_dt_end: Optional[Partition] = None,
-        version: Optional[Version] = None,
-        metadata: Optional[Metadata] = None,
-        limit: Optional[int] = None,
+        id: ID | None = None,
+        partition_dt_start: Partition | None = None,
+        partition_dt_end: Partition | None = None,
+        version: Version | None = None,
+        metadata: Metadata | None = None,
+        limit: int | None = None,
         dev: bool = False,
     ) -> Iterable[Mapping[str, Any]]:
         if metadata is not None:

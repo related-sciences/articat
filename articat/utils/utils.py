@@ -6,7 +6,6 @@ import shutil
 import subprocess
 from hashlib import md5
 from pathlib import Path
-from typing import Optional
 
 import fsspec
 from fsspec import AbstractFileSystem
@@ -40,7 +39,7 @@ def _git_get_remote_url(remote: str) -> str:
     )
 
 
-def get_repo_and_hash(remote_location: Optional[str] = None) -> tuple[str, str]:
+def get_repo_and_hash(remote_location: str | None = None) -> tuple[str, str]:
     """
     Returns git remote repository URL and HEAD hash. If the tree at
     HEAD is dirty, the hash will include "-DIRTY" suffix. Expect the CWD
@@ -57,7 +56,7 @@ def get_repo_and_hash(remote_location: Optional[str] = None) -> tuple[str, str]:
     return _git_get_remote_url(remote_location), head_hash
 
 
-def get_call_site(frames_back: int) -> Optional[tuple[str, int]]:
+def get_call_site(frames_back: int) -> tuple[str, int] | None:
     """
     Returns path of the call site file, and line number
 
@@ -106,9 +105,7 @@ def download_artifact(artifact: FSArtifact, local_dir: PathType) -> str:
     return f"{local_dir.as_posix()}{suffix}"
 
 
-def dummy_unsafe_cache(
-    artifact: FSArtifact, cache_dir: Optional[PathType] = None
-) -> str:
+def dummy_unsafe_cache(artifact: FSArtifact, cache_dir: PathType | None = None) -> str:
     """
     This is an unsafe implementation of local FS caching for FSArtifacts.
 

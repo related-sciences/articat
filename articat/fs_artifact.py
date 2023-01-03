@@ -7,7 +7,7 @@ from functools import lru_cache
 from multiprocessing.pool import ThreadPool
 from pathlib import Path
 from types import TracebackType
-from typing import ClassVar, Optional, TypeVar
+from typing import ClassVar, TypeVar
 
 import fsspec
 from fsspec import AbstractFileSystem
@@ -36,13 +36,13 @@ class FSArtifact(Artifact):
 
     # Regex of the files/objects produced by this Artifact, needs to be
     # set by the user
-    files_pattern: Optional[str] = None
+    files_pattern: str | None = None
     # Represents the "root" of the artifacts file structure, populated
     # automatically
-    files_dir: Optional[str] = None
+    files_dir: str | None = None
 
     # PRIVATE fields:
-    _file_prefix: Optional[str] = None
+    _file_prefix: str | None = None
     _fs_scheme_regex: ClassVar[str] = r"^.*?://"
 
     @property
@@ -213,7 +213,7 @@ class FSArtifact(Artifact):
             return f"{self.config().fs_prod_prefix()}/{self.id}/{partition_path}/{uuid.uuid4()}"
 
     @staticmethod
-    def _get_protocol(path: Optional[str]) -> str:
+    def _get_protocol(path: str | None) -> str:
         if not path:
             raise ValueError("Path should not be None")
         else:
@@ -239,9 +239,9 @@ class FSArtifact(Artifact):
 
     def __exit__(
         self,
-        exc_type: Optional[type[BaseException]],
-        exc_val: Optional[BaseException],
-        exc_tb: Optional[TracebackType],
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: TracebackType | None,
     ) -> None:
         super().__exit__(exc_type, exc_val, exc_tb)
 

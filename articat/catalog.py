@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Iterable, Mapping
 from datetime import date
-from typing import Any, Iterable, Mapping, Optional, TypeVar, Union, overload
+from typing import Any, TypeVar, overload
 
 from articat.artifact import ID, Artifact, Metadata, Partition, Version
 from articat.config import ArticatConfig, ConfigMixin
@@ -15,7 +16,7 @@ T = TypeVar("T", bound=Artifact)
 class Catalog(ConfigMixin):
     """RS Data Catalog"""
 
-    _config: Union[type[ArticatConfig], ArticatConfig] = ArticatConfig
+    _config: type[ArticatConfig] | ArticatConfig = ArticatConfig
 
     @classmethod
     @overload
@@ -23,7 +24,7 @@ class Catalog(ConfigMixin):
         cls,
         id: ID,
         *,
-        version: Optional[Version],
+        version: Version | None,
         dev: bool = False,
     ) -> Artifact:
         ...
@@ -34,7 +35,7 @@ class Catalog(ConfigMixin):
         cls,
         id: ID,
         *,
-        partition: Optional[Partition],
+        partition: Partition | None,
         dev: bool = False,
     ) -> Artifact:
         ...
@@ -56,8 +57,8 @@ class Catalog(ConfigMixin):
         id: ID,
         *,
         model: type[T],
-        version: Optional[Version] = None,
-        partition: Optional[Partition] = None,
+        version: Version | None = None,
+        partition: Partition | None = None,
         dev: bool = False,
     ) -> T:
         ...
@@ -68,8 +69,8 @@ class Catalog(ConfigMixin):
         cls,
         id: ID,
         *,
-        version: Optional[Version] = None,
-        partition: Optional[Partition] = None,
+        version: Version | None = None,
+        partition: Partition | None = None,
         model: type[Artifact] = Artifact,
         dev: bool = False,
     ):
@@ -154,13 +155,13 @@ class Catalog(ConfigMixin):
     @overload
     def lookup(
         cls,
-        id: Optional[ID] = None,
+        id: ID | None = None,
         *,
-        partition_dt_start: Optional[Partition] = None,
-        partition_dt_end: Optional[Partition] = None,
-        version: Optional[Version] = None,
-        metadata: Optional[Metadata] = None,
-        limit: Optional[int] = None,
+        partition_dt_start: Partition | None = None,
+        partition_dt_end: Partition | None = None,
+        version: Version | None = None,
+        metadata: Metadata | None = None,
+        limit: int | None = None,
         dev: bool = False,
     ) -> Iterable[Artifact]:
         ...
@@ -169,14 +170,14 @@ class Catalog(ConfigMixin):
     @overload
     def lookup(
         cls,
-        id: Optional[ID] = None,
+        id: ID | None = None,
         *,
         model: type[T],
-        partition_dt_start: Optional[Partition] = None,
-        partition_dt_end: Optional[Partition] = None,
-        version: Optional[Version] = None,
-        metadata: Optional[Metadata] = None,
-        limit: Optional[int] = None,
+        partition_dt_start: Partition | None = None,
+        partition_dt_end: Partition | None = None,
+        version: Version | None = None,
+        metadata: Metadata | None = None,
+        limit: int | None = None,
         dev: bool = False,
     ) -> Iterable[T]:
         ...
@@ -185,13 +186,13 @@ class Catalog(ConfigMixin):
     @classmethod
     def lookup(  # type: ignore[no-untyped-def]
         cls,
-        id: Optional[ID] = None,
+        id: ID | None = None,
         *,
-        partition_dt_start: Optional[Partition] = None,
-        partition_dt_end: Optional[Partition] = None,
-        version: Optional[Version] = None,
-        metadata: Optional[Metadata] = None,
-        limit: Optional[int] = None,
+        partition_dt_start: Partition | None = None,
+        partition_dt_end: Partition | None = None,
+        version: Version | None = None,
+        metadata: Metadata | None = None,
+        limit: int | None = None,
         model: type[Artifact] = Artifact,
         dev: bool = False,
     ):
@@ -242,12 +243,12 @@ class Catalog(ConfigMixin):
     @classmethod
     def _lookup(
         cls,
-        id: Optional[ID] = None,
-        partition_dt_start: Optional[Partition] = None,
-        partition_dt_end: Optional[Partition] = None,
-        version: Optional[Version] = None,
-        metadata: Optional[Metadata] = None,
-        limit: Optional[int] = None,
+        id: ID | None = None,
+        partition_dt_start: Partition | None = None,
+        partition_dt_end: Partition | None = None,
+        version: Version | None = None,
+        metadata: Metadata | None = None,
+        limit: int | None = None,
         dev: bool = False,
     ) -> Iterable[Mapping[str, Any]]:
         raise NotImplementedError()
@@ -267,7 +268,7 @@ class Catalog(ConfigMixin):
     def to_dataframe(
         cls,
         dev: bool = False,
-        limit: Optional[int] = None,
+        limit: int | None = None,
         include_arbitrary: bool = True,
     ) -> Any:
         """

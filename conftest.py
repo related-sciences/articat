@@ -2,7 +2,7 @@ import logging
 import tempfile
 import uuid
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 import pytest
 from _pytest.config import Config
@@ -50,7 +50,7 @@ def tmppath(tmpdir):
     return Path(tmpdir)
 
 
-def get_test_config() -> Dict[str, Dict[str, Any]]:
+def get_test_config() -> dict[str, dict[str, Any]]:
     test_fs_prefix = Path(tempfile.mkdtemp())
     logger.info(f"Test fs prefix: {test_fs_prefix.as_posix()}")
     for d in ("tmp", "dev", "prod"):

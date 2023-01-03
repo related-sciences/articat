@@ -3,7 +3,7 @@ import uuid
 from datetime import date, timedelta
 from functools import lru_cache
 from types import TracebackType
-from typing import Any, ClassVar, Optional
+from typing import Any, ClassVar
 
 from google.cloud import bigquery
 from google.cloud.exceptions import NotFound
@@ -26,7 +26,7 @@ class BQArtifact(Artifact):
 
     _bq_partition_date_format: ClassVar[str] = "%Y%m%d"
     """BQ uses this format to specify the day partitioning table"""
-    _staging_table: Optional[str] = None
+    _staging_table: str | None = None
     """Staging table the user should write data to"""
     table_id: str = ""
     """
@@ -36,7 +36,7 @@ class BQArtifact(Artifact):
 
     @staticmethod
     @lru_cache
-    def bq_client(project: Optional[str] = None, **kwargs: Any) -> bigquery.Client:
+    def bq_client(project: str | None = None, **kwargs: Any) -> bigquery.Client:
         """MVP BQ client for BQ Artifacts"""
         # TODO (rav): add support for custom GCP project/etc
         return bigquery.Client(project=project, **kwargs)
@@ -48,7 +48,7 @@ class BQArtifact(Artifact):
         version: Version,
         *,
         dev: bool = False,
-        config: Optional[ArticatConfig] = None,
+        config: ArticatConfig | None = None,
     ) -> "BQArtifact":
         """Versioned BQ artifacts are not supported"""
         raise NotImplementedError("Versioned BigQuery Artifact is not supported")
@@ -57,10 +57,10 @@ class BQArtifact(Artifact):
     def partitioned(
         cls,
         id: ID,
-        partition: Optional[Partition] = date.today(),
+        partition: Partition | None = date.today(),
         *,
         dev: bool = False,
-        config: Optional[ArticatConfig] = None,
+        config: ArticatConfig | None = None,
     ) -> "BQArtifact":
         """Partitioned BQ artifact, the partition must be a date"""
         assert partition is not None
@@ -96,9 +96,9 @@ class BQArtifact(Artifact):
 
     def __exit__(
         self,
-        exc_type: Optional[type[BaseException]],
-        exc_val: Optional[BaseException],
-        exc_tb: Optional[TracebackType],
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: TracebackType | None,
     ) -> None:
         super().__exit__(exc_type, exc_val, exc_tb)
         # NOTE: this style of set is required: https://github.com/samuelcolvin/pydantic/issues/655

@@ -3,10 +3,11 @@ from __future__ import annotations
 import logging
 import os
 import typing
+from collections.abc import Mapping
 from datetime import date, datetime
 from os import environ
 from types import TracebackType
-from typing import Any, ClassVar, Mapping, Optional, Type, TypeVar, Union
+from typing import Any, ClassVar, TypeVar, Union
 
 from google.cloud import datastore
 from google.cloud.datastore.helpers import entity_to_protobuf
@@ -24,16 +25,16 @@ logger = logging.getLogger(__name__)
 
 
 class Metadata(BaseModel):
-    spark_schema: Optional[str] = None
+    spark_schema: str | None = None
     """String representation of spark schema"""
-    schema_fields: Optional[list[str]] = None
+    schema_fields: list[str] | None = None
     """List of fields in the schema"""
     arbitrary: dict[str, Any] = {}
     """
     Any arbitrary metadata of your choice, can be embedded dicts, lists etc.
     Valid types: https://cloud.google.com/appengine/docs/standard/python/datastore/entities#Properties_and_value_types
     """
-    description: Optional[str] = None
+    description: str | None = None
     """Description"""
 
     def add_spark_df_info(self, df: pyspark.sql.DataFrame) -> Metadata:
@@ -54,20 +55,20 @@ class Arbitrary(BaseModel):
     to populate by default in one place is useful.
     """
 
-    nrow: Optional[int]
-    git_repo_url: Optional[str]
-    git_head_hash: Optional[str]
-    call_site_lineno: Optional[int]
-    step_relfname: Optional[str]
-    task_relfname: Optional[str]
-    bq_stage_load_job_id: Optional[str]
+    nrow: int | None
+    git_repo_url: str | None
+    git_head_hash: str | None
+    call_site_lineno: int | None
+    step_relfname: str | None
+    task_relfname: str | None
+    bq_stage_load_job_id: str | None
     """BQ job id used for staging BQ data"""
-    bq_job_id: Optional[str]
+    bq_job_id: str | None
     """BQ job id used to produce the final BQ data"""
-    execution_url: Optional[str]
+    execution_url: str | None
     """URL to the execution that created this Artifact (could be for example GitHub Action)"""
 
-    def get_update_dict(self) -> dict[str, Union[int, str]]:
+    def get_update_dict(self) -> dict[str, int | str]:
         """
         Returns dict with only the explicitly set fields.
 
@@ -114,22 +115,22 @@ class Artifact(ConfigMixin, BaseModel):
 
     id: ID
     """Artifact ID, globally unique"""
-    partition: Optional[Partition] = None
+    partition: Partition | None = None
     """Artifact partition, akin to datetime "git commit hash" for the artifact"""
     metadata: Metadata = Metadata()
     """Partition's metadata"""
-    version: Optional[Version] = None
+    version: Version | None = None
     """Artifact version, akin to "git tag" for the artifact"""
-    created: Optional[datetime] = None
+    created: datetime | None = None
     """Creation time"""
-    _retire_entity: Optional[Mapping[str, Any]] = None
+    _retire_entity: Mapping[str, Any] | None = None
     # Note: this field is used to carry retired entity, it's not serialized
     _partition_str_format: ClassVar[str] = "%Y%m%dT%H%M%S"
     # string format for partition used in paths etc
-    _config: Union[ArticatConfig, type[ArticatConfig]] = ArticatConfig
+    _config: ArticatConfig | type[ArticatConfig] = ArticatConfig
 
     @validator("partition")
-    def partition_must_be_datetime(cls, v: Optional[Partition]) -> Optional[datetime]:
+    def partition_must_be_datetime(cls, v: Partition | None) -> datetime | None:
         return None if v is None else convert_to_datetime(v)
 
     def open_browser(self) -> None:
@@ -153,7 +154,7 @@ class Artifact(ConfigMixin, BaseModel):
             "use one of the concrete Artifact classes"
         )
 
-    def _catalog(self) -> Type[Catalog]:
+    def _catalog(self) -> type[Catalog]:
         return self.config().catalog()
 
     def _exclude_private_fields(self) -> set[str]:
@@ -170,13 +171,13 @@ class Artifact(ConfigMixin, BaseModel):
         return self._is_dev_mode(self.id)
 
     @staticmethod
-    def _is_dev_mode(id: Optional[ID]) -> bool:
+    def _is_dev_mode(id: ID | None) -> bool:
         if not id:
             raise ValueError("id must be set")
         return id.startswith("_dev_")
 
     @staticmethod
-    def _enforce_dev_mode(id: Optional[ID], dev: bool) -> Optional[str]:
+    def _enforce_dev_mode(id: ID | None, dev: bool) -> str | None:
         if id is None:
             return None
         if dev and not Artifact._is_dev_mode(id):
@@ -216,10 +217,10 @@ class Artifact(ConfigMixin, BaseModel):
     def partitioned(
         cls: type[T],
         id: ID,
-        partition: Optional[Partition] = None,
+        partition: Partition | None = None,
         *,
         dev: bool = False,
-        config: Optional[ArticatConfig] = None,
+        config: ArticatConfig | None = None,
     ) -> T:
         """
         CTOR for a partitioned Artifact.
@@ -241,7 +242,7 @@ class Artifact(ConfigMixin, BaseModel):
         version: Version,
         *,
         dev: bool = False,
-        config: Optional[ArticatConfig] = None,
+        config: ArticatConfig | None = None,
     ) -> T:
         """
         CTOR for a versioned Artifact.
@@ -256,7 +257,7 @@ class Artifact(ConfigMixin, BaseModel):
             a._config = config
         return a
 
-    def spec(self) -> dict[str, Union[ID, Partition, Version]]:
+    def spec(self) -> dict[str, ID | Partition | Version]:
         """
         Artifact spec is enough information to uniquely identify this
         artifact up to the partition/version. Useful to debug messages
@@ -266,7 +267,7 @@ class Artifact(ConfigMixin, BaseModel):
         assert isinstance(r, dict)
         return r
 
-    def fetch(self: T, catalog: Optional[Type[Catalog]] = None) -> T:
+    def fetch(self: T, catalog: type[Catalog] | None = None) -> T:
         """
         When Artifact is used as a "spec", it doesn't have full information,
         use this method to fetch all the metadata from the Catalog.
@@ -362,9 +363,9 @@ class Artifact(ConfigMixin, BaseModel):
 
     def __exit__(
         self,
-        exc_type: Optional[type[BaseException]],
-        exc_val: Optional[BaseException],
-        exc_tb: Optional[TracebackType],
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: TracebackType | None,
     ) -> None:
         if not exc_type:
             self._catalog().save(self.build())
