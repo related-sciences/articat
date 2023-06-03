@@ -57,13 +57,13 @@ class BQArtifact(Artifact):
     def partitioned(
         cls,
         id: ID,
-        partition: Partition | None = date.today(),
+        partition: Partition | None = None,
         *,
         dev: bool = False,
         config: ArticatConfig | None = None,
     ) -> "BQArtifact":
         """Partitioned BQ artifact, the partition must be a date"""
-        assert partition is not None
+        partition = partition or date.today()
         # TODO (rav): add support for up to an hour resolution
         if partition.resolution != timedelta(days=1):
             raise ValueError("Partition resolution for BQ artifact must be a day")

@@ -32,7 +32,7 @@ class PapermillOutput:
 
 def papermill_notebook(
     notebook_path: Path,
-    params: dict[str, Any] = {},
+    params: dict[str, Any] | None = None,
     exporter_config: Config | None = None,
 ) -> PapermillOutput:
     """
@@ -40,6 +40,7 @@ def papermill_notebook(
     for a tutorial on the parameter handling. It saves executed notebook and an HTML report in a
     temporary directory. The original notebook is untouched.
     """
+    params = params or {}
     tmp_dir = Path(tempfile.mkdtemp())
     logger.debug(
         f"Working/temp directory for papermill on {notebook_path} with {params} will be {tmp_dir}"

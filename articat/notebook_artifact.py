@@ -24,7 +24,7 @@ class NotebookArtifact(FSArtifact):
         """
         if self.main_dir.startswith("gs://"):
             auth_url_root = "https://storage.cloud.google.com"
-            path = self.main_dir.lstrip("gs://")
+            path = self.main_dir.replace("gs://", "", 1)
             return f"{auth_url_root}/{path}/{filename}"
         else:
             return super().browser_url()
@@ -50,7 +50,7 @@ class NotebookArtifact(FSArtifact):
     def stage_notebook(
         self,
         notebook_path: PathType,
-        params: dict[str, Any] = {},
+        params: dict[str, Any] | None = None,
         exporter_config: Config | None = None,
     ) -> "NotebookArtifact":
         """
@@ -58,6 +58,7 @@ class NotebookArtifact(FSArtifact):
         notebook (with original name), the executed notebook with _executed suffix, and
         the HTML output in `output.html`.
         """
+        params = params or {}
         nb_out = papermill_notebook(to_pathlib(notebook_path), params, exporter_config)
         fsspec_copyfile(
             nb_out.notebook_src.as_posix(), self.joinpath(nb_out.notebook_src.name)

@@ -85,7 +85,7 @@ class CLI:
                 print(e.json(exclude=json_exclude), flush=True)  # type: ignore[arg-type]
             else:
                 assert format == "csv"
-                csv_result.append(e.dict(exclude=dict(metadata=...)))
+                csv_result.append(e.dict(exclude={"metadata": ...}))
         if len(csv_result) > 0:
             import pandas as pd
 

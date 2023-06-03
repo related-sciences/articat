@@ -247,7 +247,7 @@ class FSArtifact(Artifact):
 
     def browser_url(self) -> str:
         if self.main_dir.startswith("gs://"):
-            path = self.main_dir.lstrip("gs://")
+            path = self.main_dir.replace("gs://", "", 1)
             return f"https://console.cloud.google.com/storage/browser/{path}"
         else:
             return self.main_dir
