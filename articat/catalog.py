@@ -118,7 +118,7 @@ class Catalog(ConfigMixin):
                 )
             )
         except StopIteration as e:
-            req = dict(id=id, partition=partition, version=version, dev=dev)
+            req = {"id": id, "partition": partition, "version": version, "dev": dev}
             raise ValueError(f"Can't find requested artifact {req}") from e
 
     @classmethod
@@ -265,6 +265,11 @@ class Catalog(ConfigMixin):
         raise NotImplementedError()
 
     @classmethod
+    def deprecate(cls, artifact: Artifact) -> None:
+        """Deprecates an artifact in the Catalog."""
+        raise NotImplementedError()
+
+    @classmethod
     def to_dataframe(
         cls,
         dev: bool = False,
@@ -283,9 +288,9 @@ class Catalog(ConfigMixin):
             logger.exception("to_dataframe requires pandas, install pandas ...")
             raise
 
-        exclude = None if include_arbitrary else dict(metadata=dict(arbitrary=...))
-        catalog_dicts = list(
+        exclude = None if include_arbitrary else {"metadata": {"arbitrary": ...}}
+        catalog_dicts = [
             i.dict(exclude=exclude)  # type: ignore[arg-type]
             for i in cls.lookup(dev=dev, limit=limit, model=Artifact)
-        )
+        ]
         return pd.json_normalize(catalog_dicts, sep="_")

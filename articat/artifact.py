@@ -292,7 +292,7 @@ class Artifact(ConfigMixin, BaseModel):
         # versioned artifacts still have unique partition, but
         # for completeness let's include version
         dep_spec = [i.spec() for i in deps]
-        self.metadata.arbitrary.update(dict(deps=d + dep_spec))
+        self.metadata.arbitrary.update({"deps": d + dep_spec})
         return self
 
     def __enter__(self: T) -> T:
@@ -371,6 +371,13 @@ class Artifact(ConfigMixin, BaseModel):
             self._catalog().save(self.build())
             logger.info(f"Artifact {self.spec()} materialized at: {self.browser_url()}")
         object.__setattr__(self, "_retire_entity", None)
+
+    def deprecate(self) -> None:
+        """Deprecate this artifact"""
+        assert self.id is not None
+        assert (self.version is not None) or (self.partition is not None)
+        artifact = self.fetch()
+        self._catalog().deprecate(artifact)
 
 
 NoneArtifact = typing.cast(Artifact, object())

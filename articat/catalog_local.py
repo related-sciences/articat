@@ -90,3 +90,8 @@ class CatalogLocal(Catalog):
                 del db[cls._compute_key(Artifact.parse_obj(artifact._retire_entity))]
             db[cls._compute_key(artifact)] = artifact.json()
         return artifact
+
+    @classmethod
+    def deprecate(cls, artifact: Artifact) -> None:
+        """Deprecates an artifact in the Catalog."""
+        raise NotImplementedError()

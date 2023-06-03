@@ -52,12 +52,12 @@ class CatalogDatastore(Catalog):
     ) -> Iterable[Entity]:
         id = Artifact._enforce_dev_mode(id, dev)
         if id and Artifact._is_dev_mode(id):
-            msg_spec = dict(
-                id=id,
-                partition_dt_start=partition_dt_start,
-                partition_dt_end=partition_dt_end,
-                version=version,
-            )
+            msg_spec = {
+                "id": id,
+                "partition_dt_start": partition_dt_start,
+                "partition_dt_end": partition_dt_end,
+                "version": version,
+            }
             logger.warning(
                 f"Looking up dev artifact {msg_spec}, dev data gets deleted after 30 days"
             )
@@ -176,3 +176,38 @@ class CatalogDatastore(Catalog):
         # TODO (rav): make this a transaction at the key level
         cls._put_entity(key, artifact, client)
         return artifact
+
+    @classmethod
+    def deprecate(cls, artifact: Artifact) -> None:
+        """Deprecates an artifact in the Catalog."""
+        deprecated_client = cls._client(
+            project=cls.config().gcp_project(), namespace="deprecated"
+        )
+        if artifact.is_dev():
+            client = cls._dev_client()
+        else:
+            client = cls._client()
+
+        deprecate_todos = list(
+            cls._lookup(
+                id=artifact.id,
+                partition_dt_start=artifact.partition,
+                partition_dt_end=artifact.partition,
+                version=artifact.version,
+                client=client,
+            )
+        )
+        if len(deprecate_todos) == 0:
+            logger.warning("No artifact found to deprecate")
+            return
+        elif len(deprecate_todos) > 1:
+            raise ValueError("You can only deprecate one artifact at a time")
+
+        deprecate_entity = deprecate_todos[0]
+        with client.transaction():
+            with deprecated_client.transaction():
+                deprecated_key = deprecated_client.key(
+                    "Artifact", artifact.id, "Partition", deprecate_entity.id
+                )
+                cls._put_entity(deprecated_key, artifact, deprecated_client)
+            client.delete(deprecate_entity.key)
