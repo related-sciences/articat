@@ -3,7 +3,6 @@ from __future__ import annotations
 import logging
 import os
 import typing
-from collections.abc import Mapping
 from datetime import date, datetime
 from os import environ
 from types import TracebackType
@@ -123,8 +122,6 @@ class Artifact(ConfigMixin, BaseModel):
     """Artifact version, akin to "git tag" for the artifact"""
     created: datetime | None = None
     """Creation time"""
-    _retire_entity: Mapping[str, Any] | None = None
-    # Note: this field is used to carry retired entity, it's not serialized
     _partition_str_format: ClassVar[str] = "%Y%m%dT%H%M%S"
     # string format for partition used in paths etc
     _config: ArticatConfig | type[ArticatConfig] = ArticatConfig
@@ -333,33 +330,24 @@ class Artifact(ConfigMixin, BaseModel):
         self.__add_git_info()
         self.__add_exe_info()
 
-        # Check if the artifact metadata already exists:
-        try:
-            # NOTE: we use protected _lookup because we want to parse raw object later
-            if self.version is not None:
-                # NOTE: if version is set, we check by version
-                e = next(
-                    iter(self._catalog()._lookup(id=self.id, version=self.version))
-                )
-            else:
-                e = next(
+        if self.is_dev():
+            return self
+        else:
+            # Check if the artifact metadata already exists:
+            try:
+                next(
                     iter(
-                        self._catalog()._lookup(
+                        self._catalog().lookup(
                             id=self.id,
+                            version=self.version,
                             partition_dt_start=self.partition,
                             partition_dt_end=self.partition,
                         )
                     )
                 )
-            if self.is_dev():
-                logger.warning(
-                    f"Dev mode will overwrite metadata for previous {self.id}"
-                )
-                object.__setattr__(self, "_retire_entity", e)
+                raise ValueError(f"Artifact already exists, spec: {self.spec()}")
+            except StopIteration:
                 return self
-            raise ValueError("Catalog already has an entry for this artifact!")
-        except StopIteration:
-            return self
 
     def __exit__(
         self,
@@ -370,7 +358,6 @@ class Artifact(ConfigMixin, BaseModel):
         if not exc_type:
             self._catalog().save(self.build())
             logger.info(f"Artifact {self.spec()} materialized at: {self.browser_url()}")
-        object.__setattr__(self, "_retire_entity", None)
 
     def deprecate(self) -> None:
         """Deprecate this artifact"""

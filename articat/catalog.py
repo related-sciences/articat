@@ -254,7 +254,7 @@ class Catalog(ConfigMixin):
         raise NotImplementedError()
 
     @classmethod
-    def save(cls, artifact: Artifact) -> Artifact:
+    def save(cls, artifact: Artifact, **kwargs: Any) -> Artifact:
         """
         Saves a fully formed artifact into the Catalog. In most cases you
         should use artifact with a with-statement context, which builds

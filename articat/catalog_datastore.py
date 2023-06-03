@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 from collections.abc import Iterable
 from functools import lru_cache
-from typing import TypeVar
+from typing import Any, TypeVar
 
 from google.cloud import datastore
 from google.cloud.datastore import Client, Entity, Key
@@ -32,11 +32,6 @@ class CatalogDatastore(Catalog):
     def _dev_client(cls, project: str | None = None) -> datastore.Client:
         project = project or cls.config().gcp_project()
         return cls._client(project=project, namespace="dev")
-
-    @classmethod
-    def _retired_client(cls, project: str | None = None) -> datastore.Client:
-        project = project or cls.config().gcp_project()
-        return cls._client(project=project, namespace="retired")
 
     @classmethod
     def _lookup(
@@ -144,7 +139,7 @@ class CatalogDatastore(Catalog):
         client.put(catalog_entity)
 
     @classmethod
-    def save(cls, artifact: Artifact) -> Artifact:
+    def save(cls, artifact: Artifact, **kwargs: Any) -> Artifact:
         """
         Saves a fully formed artifact into the Catalog. In most cases you
         should use artifact with a with-statement context, which builds
@@ -160,21 +155,35 @@ class CatalogDatastore(Catalog):
             client = cls._dev_client()
         else:
             client = cls._client()
-        if artifact._retire_entity is not None:
-            # We don't delete any metadata we copy it to the retired namespace
-            re = artifact._retire_entity
-            assert isinstance(re, Entity)
-            r_art = artifact.__class__.parse_obj(re)
-            retired_client = cls._retired_client()
-            retired_key = retired_client.key(
-                "Artifact", artifact.id, "Partition", re.id
-            )
-            cls._put_entity(retired_key, r_art, retired_client)
-            key = client.key("Artifact", artifact.id, "Partition", re.id)
-        else:
-            key = client.key("Artifact", artifact.id, "Partition")
-        # TODO (rav): make this a transaction at the key level
-        cls._put_entity(key, artifact, client)
+        with client.transaction():
+            try:
+                existing_entity = next(
+                    iter(
+                        cls._lookup(
+                            id=artifact.id,
+                            partition_dt_start=artifact.partition,
+                            partition_dt_end=artifact.partition,
+                            version=artifact.version,
+                            limit=1,
+                            client=client,
+                        )
+                    )
+                )
+            except StopIteration:
+                existing_entity = None
+            if existing_entity is not None:
+                if not artifact.is_dev():
+                    raise ValueError(
+                        f"Artifact already exists, spec: {artifact.spec()}"
+                    )
+                else:
+                    key = client.key(
+                        "Artifact", artifact.id, "Partition", existing_entity.id
+                    )
+            else:
+                key = client.key("Artifact", artifact.id, "Partition")
+
+            cls._put_entity(key, artifact, client)
         return artifact
 
     @classmethod
