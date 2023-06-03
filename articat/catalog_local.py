@@ -84,11 +84,15 @@ class CatalogLocal(Catalog):
         )
 
     @classmethod
-    def save(cls, artifact: Artifact) -> Artifact:
+    def save(cls, artifact: Artifact, **kwargs: Any) -> Artifact:
         with cls._get_db() as db:
-            if artifact._retire_entity is not None:
-                del db[cls._compute_key(Artifact.parse_obj(artifact._retire_entity))]
-            db[cls._compute_key(artifact)] = artifact.json()
+            db_key = cls._compute_key(artifact)
+            if db_key in db:
+                if not artifact.is_dev():
+                    raise ValueError(
+                        f"Catalog already contains artifact: {artifact.spec()!r}"
+                    )
+            db[db_key] = artifact.json()
         return artifact
 
     @classmethod

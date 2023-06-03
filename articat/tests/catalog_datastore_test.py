@@ -210,32 +210,18 @@ def test_catalog_lookup__cant_lookup_by_description_or_spark_schema(uid: ID) -> 
 
 def test_dev_mode_can_overwrite(uid: ID) -> None:
     TestFSArtifact.write_dummy_versioned(uid, "0.1.0")
-    with pytest.raises(
-        ValueError, match="Catalog already has an entry for this artifact!"
-    ):
+    with pytest.raises(ValueError, match="Artifact already exists, spec"):
         TestFSArtifact.write_dummy_versioned(uid, "0.1.0")
 
     dev_id = f"_dev_{uid}"
-    retired = list(
-        TestCatalog._lookup(
-            dev_id, version="0.1.0", client=TestCatalog._retired_client()
-        )
-    )
     dev = list(TestCatalog.lookup(dev_id, version="0.1.0"))
     assert len(dev) == 0
-    assert len(retired) == 0
 
     TestFSArtifact.write_dummy_versioned(dev_id, "0.1.0")
     TestFSArtifact.write_dummy_versioned(dev_id, "0.1.0")
 
-    retired = list(
-        TestCatalog._lookup(
-            dev_id, version="0.1.0", client=TestCatalog._retired_client()
-        )
-    )
     dev = list(TestCatalog.lookup(dev_id, version="0.1.0"))
     assert len(dev) == 1
-    assert len(retired) == 1
 
 
 def test_catalog_latest_partition(uid: ID) -> None:
