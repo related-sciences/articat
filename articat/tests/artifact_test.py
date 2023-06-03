@@ -17,7 +17,7 @@ from articat.tests.utils import (
 def test_large_arbitrary_entry(uid: ID) -> None:
     more_than_1500 = "f" * 2000
     with TestFSArtifact.dummy_versioned_ctx(uid, "0.1.0") as a:
-        a.metadata.arbitrary.update(dict(foo=more_than_1500))
+        a.metadata.arbitrary.update({"foo": more_than_1500})
 
     a = TestCatalog.get(uid, version="0.1.0", model=TestFSArtifact)
     assert a.metadata.arbitrary.get("foo") == more_than_1500
@@ -26,7 +26,7 @@ def test_large_arbitrary_entry(uid: ID) -> None:
 def test_artifact_parse_extra_prop(uid: ID) -> None:
     TestFSArtifact.write_dummy_partitioned(uid, date.today())
     a_back = TestCatalog.get(uid, partition=date.today(), model=Artifact)
-    assert getattr(a_back, "files_pattern")
+    assert a_back.files_pattern  # type: ignore[attr-defined]
 
 
 def test_write_to_prod_on_non_prod_env_fails(uid: ID, monkeypatch: MonkeyPatch) -> None:
