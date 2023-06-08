@@ -360,7 +360,11 @@ class Artifact(ConfigMixin, BaseModel):
             logger.info(f"Artifact {self.spec()} materialized at: {self.browser_url()}")
 
     def deprecate(self) -> None:
-        """Deprecate this artifact"""
+        """
+        Deprecate this artifact. This is a metadata operation, the physical data will NOT be touched.
+        After an artifact is deprecated it won't be visible in the catalog anymore. The physical data
+        will be cleaned up by a separate process and is an implementation detail of the catalog.
+        """
         assert self.id is not None
         assert (self.version is not None) or (self.partition is not None)
         artifact = self.fetch()
