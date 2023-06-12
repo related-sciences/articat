@@ -23,6 +23,31 @@ if typing.TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
+class ValueNotSupplied:
+    """
+    An instance of this type is used to indicate that a parameter was not supplied by the user,
+    while still allowing None to be a valid value.
+    """
+
+    def __new__(cls, *args: Any, **kwargs: Any) -> ValueNotSupplied:
+        # NOTE: this is not thread safe
+        if not hasattr(cls, "_instance"):
+            cls._instance = super().__new__(cls)
+        return cls._instance
+
+    def __str__(self) -> str:
+        return "NOT_SUPPLIED"
+
+    def __repr__(self) -> str:
+        return "NOT_SUPPLIED"
+
+
+not_supplied: None = ValueNotSupplied()  # type: ignore[assignment]
+"""
+Static typing is set to None, to make mypy happy across the codebase.
+"""
+
+
 class Metadata(BaseModel):
     spark_schema: str | None = None
     """String representation of spark schema"""
@@ -118,7 +143,7 @@ class Artifact(ConfigMixin, BaseModel):
     """Artifact partition, akin to datetime "git commit hash" for the artifact"""
     metadata: Metadata = Metadata()
     """Partition's metadata"""
-    version: Version | None = None
+    version: Version | None = not_supplied
     """Artifact version, akin to "git tag" for the artifact"""
     created: datetime | None = None
     """Creation time"""
@@ -366,9 +391,28 @@ class Artifact(ConfigMixin, BaseModel):
         will be cleaned up by a separate process and is an implementation detail of the catalog.
         """
         assert self.id is not None
-        assert (self.version is not None) or (self.partition is not None)
+        assert (self.version not in {None, not_supplied}) or (
+            self.partition is not None
+        )
         artifact = self.fetch()
         self._catalog().deprecate(artifact)
+
+    def dict(self, *args: Any, **kwargs: Any) -> dict[str, Any]:
+        """
+        Override the default dict() method to handle the case where version is not supplied.
+        """
+        d = super().dict(*args, **kwargs)
+        if d["version"] is not_supplied:
+            d["version"] = None
+        return d
+
+    def json(self, *args: Any, **kwargs: Any) -> str:
+        """
+        Override the default json() method to handle the case where version is not supplied.
+        """
+        if self.version is not_supplied:
+            return self.copy(update={"version": None}).json(*args, **kwargs)
+        return super().json(*args, **kwargs)
 
 
 NoneArtifact = typing.cast(Artifact, object())

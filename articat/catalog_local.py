@@ -7,7 +7,7 @@ from hashlib import md5
 from pathlib import Path
 from typing import Any
 
-from articat.artifact import ID, Artifact, Metadata, Partition, Version
+from articat.artifact import ID, Artifact, Metadata, Partition, Version, not_supplied
 from articat.catalog import Catalog
 from articat.utils.datetime_utils import convert_to_datetime
 
@@ -32,7 +32,8 @@ class CatalogLocal(Catalog):
     def _compute_key(cls, artifact: Artifact) -> str:
         h = md5()
         h.update(artifact.id.encode())
-        if artifact.version:
+        if artifact.version not in {None, not_supplied}:
+            assert isinstance(artifact.version, str)
             h.update(artifact.version.encode())
         if artifact.partition:
             assert isinstance(artifact.partition, datetime)
@@ -45,7 +46,7 @@ class CatalogLocal(Catalog):
         id: ID | None = None,
         partition_dt_start: Partition | None = None,
         partition_dt_end: Partition | None = None,
-        version: Version | None = None,
+        version: Version | None = not_supplied,
         metadata: Metadata | None = None,
         limit: int | None = None,
         dev: bool = False,
@@ -59,7 +60,7 @@ class CatalogLocal(Catalog):
                 if id is not None:
                     if a.id != id:
                         continue
-                if version is not None:
+                if version is not not_supplied:
                     if a.version != version:
                         continue
                     elif a.version == version:

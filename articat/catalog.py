@@ -5,7 +5,7 @@ from collections.abc import Iterable, Mapping
 from datetime import date
 from typing import Any, TypeVar, overload
 
-from articat.artifact import ID, Artifact, Metadata, Partition, Version
+from articat.artifact import ID, Artifact, Metadata, Partition, Version, not_supplied
 from articat.config import ArticatConfig, ConfigMixin
 
 logger = logging.getLogger(__name__)
@@ -57,7 +57,7 @@ class Catalog(ConfigMixin):
         id: ID,
         *,
         model: type[T],
-        version: Version | None = None,
+        version: Version | None = not_supplied,
         partition: Partition | None = None,
         dev: bool = False,
     ) -> T:
@@ -69,7 +69,7 @@ class Catalog(ConfigMixin):
         cls,
         id: ID,
         *,
-        version: Version | None = None,
+        version: Version | None = not_supplied,
         partition: Partition | None = None,
         model: type[Artifact] = Artifact,
         dev: bool = False,
@@ -94,7 +94,7 @@ class Catalog(ConfigMixin):
         :param model: optional model class (e.g. FSArtifact)
         :type dev: whether to use dev mode (default False)
         """
-        if not partition and not version:
+        if not partition and version is not_supplied:
             a = cls.latest_partition(id, model=model, dev=dev)
             assert isinstance(a, Artifact)
             logger.warning(
@@ -159,7 +159,7 @@ class Catalog(ConfigMixin):
         *,
         partition_dt_start: Partition | None = None,
         partition_dt_end: Partition | None = None,
-        version: Version | None = None,
+        version: Version | None = not_supplied,
         metadata: Metadata | None = None,
         limit: int | None = None,
         dev: bool = False,
@@ -175,7 +175,7 @@ class Catalog(ConfigMixin):
         model: type[T],
         partition_dt_start: Partition | None = None,
         partition_dt_end: Partition | None = None,
-        version: Version | None = None,
+        version: Version | None = not_supplied,
         metadata: Metadata | None = None,
         limit: int | None = None,
         dev: bool = False,
@@ -190,7 +190,7 @@ class Catalog(ConfigMixin):
         *,
         partition_dt_start: Partition | None = None,
         partition_dt_end: Partition | None = None,
-        version: Version | None = None,
+        version: Version | None = not_supplied,
         metadata: Metadata | None = None,
         limit: int | None = None,
         model: type[Artifact] = Artifact,
@@ -246,7 +246,7 @@ class Catalog(ConfigMixin):
         id: ID | None = None,
         partition_dt_start: Partition | None = None,
         partition_dt_end: Partition | None = None,
-        version: Version | None = None,
+        version: Version | None = not_supplied,
         metadata: Metadata | None = None,
         limit: int | None = None,
         dev: bool = False,
@@ -290,7 +290,7 @@ class Catalog(ConfigMixin):
 
         exclude = None if include_arbitrary else {"metadata": {"arbitrary": ...}}
         catalog_dicts = [
-            i.dict(exclude=exclude)  # type: ignore[arg-type]
+            i.dict(exclude=exclude)
             for i in cls.lookup(dev=dev, limit=limit, model=Artifact)
         ]
         return pd.json_normalize(catalog_dicts, sep="_")
