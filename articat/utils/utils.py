@@ -10,7 +10,7 @@ from pathlib import Path
 import fsspec
 from fsspec import AbstractFileSystem
 
-from articat.artifact import Artifact
+from articat.artifact import Artifact, not_supplied
 from articat.fs_artifact import FSArtifact
 from articat.utils.typing import PathType
 
@@ -149,7 +149,13 @@ def dummy_unsafe_cache(artifact: FSArtifact, cache_dir: PathType | None = None) 
     )
     assert artifact.created is not None
     m.update(artifact.created.strftime(Artifact._partition_str_format).encode("UTF-8"))
-    m.update((artifact.version and artifact.version.encode("UTF-8")) or b"")
+    m.update(
+        (
+            artifact.version not in {None, not_supplied}
+            and artifact.version.encode("UTF-8")  # type: ignore[union-attr]
+        )
+        or b""
+    )
     hex = m.hexdigest()
 
     cache_entry = cache_dir_path.joinpath(hex)

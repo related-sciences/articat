@@ -8,7 +8,7 @@ from typing import Any, TypeVar
 from google.cloud import datastore
 from google.cloud.datastore import Client, Entity, Key
 
-from articat.artifact import ID, Artifact, Metadata, Partition, Version
+from articat.artifact import ID, Artifact, Metadata, Partition, Version, not_supplied
 from articat.catalog import Catalog
 from articat.utils.datetime_utils import convert_to_datetime
 
@@ -39,7 +39,7 @@ class CatalogDatastore(Catalog):
         id: ID | None = None,
         partition_dt_start: Partition | None = None,
         partition_dt_end: Partition | None = None,
-        version: Version | None = None,
+        version: Version | None = not_supplied,
         metadata: Metadata | None = None,
         limit: int | None = None,
         dev: bool = False,
@@ -82,7 +82,7 @@ class CatalogDatastore(Catalog):
             query = client.query(kind="Partition", ancestor=client.key("Artifact", id))
         else:
             query = client.query(kind="Partition")
-        if version is None and (
+        if version in {None, not_supplied} and (
             partition_dt_start is not None or partition_dt_end is not None
         ):
             if (
@@ -103,7 +103,8 @@ class CatalogDatastore(Catalog):
                         "partition", "<", convert_to_datetime(partition_dt_end)
                     )
                 query.order = ["-partition"]
-        if version:
+        if version is not not_supplied:
+            # NOTE: version may be None here, and that's fine
             query.add_filter("version", "=", version)
         if metadata is not None:
             if metadata.schema_fields:
