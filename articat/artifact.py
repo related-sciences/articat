@@ -41,6 +41,9 @@ class ValueNotSupplied:
     def __repr__(self) -> str:
         return "NOT_SUPPLIED"
 
+    def __bool__(self) -> bool:
+        return False
+
 
 not_supplied: None = ValueNotSupplied()  # type: ignore[assignment]
 """
