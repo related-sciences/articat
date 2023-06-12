@@ -36,7 +36,7 @@ class ValueNotSupplied:
         return cls._instance
 
     def __str__(self) -> str:
-        return "NOT_SUPPLIED"
+        return self.__repr__()
 
     def __repr__(self) -> str:
         return "NOT_SUPPLIED"
