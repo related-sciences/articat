@@ -4,7 +4,7 @@ from datetime import date, datetime
 from pathlib import Path
 from typing import Literal
 
-from articat.artifact import Artifact
+from articat.artifact import Artifact, not_supplied
 from articat.bq_artifact import BQArtifact
 from articat.config import ArticatConfig
 from articat.fs_artifact import FSArtifact
@@ -21,7 +21,7 @@ class CLI:
         *,
         id: str | None = None,
         partition: str | None = None,
-        version: str | None = None,
+        version: str | None = not_supplied,
     ) -> None:
         """
         Open URL associated with the Artifact.
@@ -30,7 +30,11 @@ class CLI:
         :param partition: Optional partition (YYYY-MM-DD)
         :param version: Optional version
         """
-        artifact = Artifact(id=id, partition=partition, version=version).fetch()
+        if version is not not_supplied:
+            artifact = Artifact(id=id, partition=partition, version=version)
+        else:
+            artifact = Artifact.partitioned(id=id, partition=partition)  # type: ignore[arg-type]
+        artifact = artifact.fetch()
         if hasattr(artifact, "files_pattern"):
             artifact = FSArtifact.parse_obj(artifact)
         elif hasattr(artifact, "table_id"):
@@ -45,7 +49,7 @@ class CLI:
         *,
         id: str | None = None,
         partition: str | None = None,
-        version: str | None = None,
+        version: str | None = not_supplied,
         limit: int | None = None,
         no_trunc: bool = False,
         dev: bool = False,
@@ -76,7 +80,7 @@ class CLI:
             partition_dt_start=partition_dt
             or datetime.fromisoformat(date.min.isoformat()),
             partition_dt_end=partition_dt,
-            version=str(version) if version else None,
+            version=str(version) if version else version,
             limit=limit,
             model=Artifact,
             dev=dev,
