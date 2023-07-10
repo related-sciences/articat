@@ -118,7 +118,7 @@ class CatalogDatastore(Catalog):
     @classmethod
     def _put_entity(cls, key: Key, artifact: Artifact, client: Client) -> None:
         catalog_entity = datastore.Entity(key)
-        record = artifact.dict(exclude=artifact._exclude_private_fields())
+        record = artifact.model_dump(exclude=artifact._exclude_private_fields())
 
         if artifact.metadata is not None:
             # This fields are not indexed, and therefor can't be match on

@@ -138,7 +138,7 @@ def test_cache__env_var(monkeypatch: MonkeyPatch, caching_artifact: FSArtifact) 
 def test_cache__diff_artifact_id(caching_artifact: FSArtifact) -> None:
     cache_dir = Path(tempfile.mkdtemp())
     b = dummy_unsafe_cache(caching_artifact, cache_dir)
-    diff_art = caching_artifact.copy(update={"id": "sth_diff"})
+    diff_art = caching_artifact.model_copy(update={"id": "sth_diff"})
     c = dummy_unsafe_cache(diff_art, cache_dir)
     assert cache_dir.as_posix() in b
     assert cache_dir.as_posix() in c
@@ -151,9 +151,11 @@ def test_cache__diff_artifact_partition_version_created(
     monkeypatch.setattr(Artifact, "_partition_str_format", "%Y%m%dT%H%M%S%f")
     cache_dir = Path(tempfile.mkdtemp())
     b = dummy_unsafe_cache(caching_artifact, cache_dir)
-    diff_partition = caching_artifact.copy(update={"partition": datetime.utcnow()})
-    diff_version = caching_artifact.copy(update={"version": "0.1.3"})
-    diff_created = caching_artifact.copy(update={"created": datetime.utcnow()})
+    diff_partition = caching_artifact.model_copy(
+        update={"partition": datetime.utcnow()}
+    )
+    diff_version = caching_artifact.model_copy(update={"version": "0.1.3"})
+    diff_created = caching_artifact.model_copy(update={"created": datetime.utcnow()})
     c = dummy_unsafe_cache(diff_partition, cache_dir)
     d = dummy_unsafe_cache(diff_version, cache_dir)
     e = dummy_unsafe_cache(diff_created, cache_dir)

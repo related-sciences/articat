@@ -183,7 +183,7 @@ class FSArtifact(Artifact):
                 "Manifest file `_MANIFEST.json` already present in the staged files - this is not supported"
             )
         with fs.open(f"{actual_prefix}/_MANIFEST.json", "w") as m:
-            m.write(self.json(exclude=self._exclude_private_fields()))
+            m.write(self.model_dump_json(exclude=self._exclude_private_fields()))
         try:
             # truncate false, means if the file already exists do not
             # truncate it, which is what we want. If the file
