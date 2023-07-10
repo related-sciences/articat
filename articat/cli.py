@@ -36,9 +36,9 @@ class CLI:
             artifact = Artifact.partitioned(id=id, partition=partition)  # type: ignore[arg-type]
         artifact = artifact.fetch()
         if hasattr(artifact, "files_pattern"):
-            artifact = FSArtifact.parse_obj(artifact)
+            artifact = FSArtifact.model_validate(artifact)
         elif hasattr(artifact, "table_id"):
-            artifact = BQArtifact.parse_obj(artifact)
+            artifact = BQArtifact.model_validate(artifact)
         else:
             raise ValueError(f"Don't know how to open {artifact}")
         logger.info(f"Opening artifact: {artifact.spec()} via {artifact.browser_url()}")
@@ -86,10 +86,10 @@ class CLI:
             dev=dev,
         ):
             if format == "json":
-                print(e.json(exclude=json_exclude), flush=True)
+                print(e.model_dump_json(exclude=json_exclude), flush=True)
             else:
                 assert format == "csv"
-                csv_result.append(e.dict(exclude={"metadata": ...}))
+                csv_result.append(e.model_dump(exclude={"metadata": ...}))
         if len(csv_result) > 0:
             import pandas as pd
 

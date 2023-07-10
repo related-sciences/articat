@@ -93,7 +93,7 @@ class CatalogLocal(Catalog):
                     raise ValueError(
                         f"Catalog already contains artifact: {artifact.spec()!r}"
                     )
-            db[db_key] = artifact.json()
+            db[db_key] = artifact.model_dump_json()
         return artifact
 
     @classmethod

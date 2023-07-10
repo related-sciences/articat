@@ -10,7 +10,7 @@ from typing import Any, ClassVar, TypeVar, Union
 
 from google.cloud import datastore
 from google.cloud.datastore.helpers import entity_to_protobuf
-from pydantic import BaseModel, Extra, validator
+from pydantic import BaseModel, ConfigDict, field_validator
 
 from articat.config import ArticatConfig, ArticatMode, ConfigMixin
 from articat.utils.datetime_utils import convert_to_datetime
@@ -127,18 +127,12 @@ T = TypeVar("T", bound="Artifact")
 class Artifact(ConfigMixin, BaseModel):
     """Represents a single instance of a data Artifact"""
 
-    class Config:
-        """Core Artifact pydantic config"""
-
-        extra = Extra.allow
-        """
-        Allow for extra properties to propagate into Artifact.
-
-        This allows to parse any specialized Artifact as Artifact
-        model, without "losing" extra properties.
-        """
-        underscore_attrs_are_private = True
-        """Underscore attributes are private"""
+    model_config = ConfigDict(
+        # Allow for extra properties to propagate into Artifact.
+        # This allows to parse any specialized Artifact as Artifact
+        # model, without "losing" extra properties.
+        extra="allow",
+    )
 
     id: ID
     """Artifact ID, globally unique"""
@@ -154,7 +148,8 @@ class Artifact(ConfigMixin, BaseModel):
     # string format for partition used in paths etc
     _config: ArticatConfig | type[ArticatConfig] = ArticatConfig
 
-    @validator("partition")
+    @field_validator("partition")
+    @classmethod
     def partition_must_be_datetime(cls, v: Partition | None) -> datetime | None:
         return None if v is None else convert_to_datetime(v)
 
@@ -188,7 +183,7 @@ class Artifact(ConfigMixin, BaseModel):
 
     def _test_artifact_serialization(self) -> None:
         e = datastore.Entity()
-        e.update(self.dict(exclude=self._exclude_private_fields()))
+        e.update(self.model_dump(exclude=self._exclude_private_fields()))
         entity_to_protobuf(e)
 
     def is_dev(self) -> bool:
@@ -288,7 +283,7 @@ class Artifact(ConfigMixin, BaseModel):
         artifact up to the partition/version. Useful to debug messages
         or recording dependencies.
         """
-        r = self.dict(include={"id", "partition", "version"})
+        r = self.model_dump(include={"id", "partition", "version"})
         assert isinstance(r, dict)
         return r
 
@@ -400,22 +395,24 @@ class Artifact(ConfigMixin, BaseModel):
         artifact = self.fetch()
         self._catalog().deprecate(artifact)
 
-    def dict(self, *args: Any, **kwargs: Any) -> dict[str, Any]:
+    def model_dump(self, *args: Any, **kwargs: Any) -> dict[str, Any]:
         """
-        Override the default dict() method to handle the case where version is not supplied.
+        Override the default model_dump() method to handle the case where version is not supplied.
         """
-        d = super().dict(*args, **kwargs)
+        d = super().model_dump(*args, **kwargs)
         if d["version"] is not_supplied:
             d["version"] = None
         return d
 
-    def json(self, *args: Any, **kwargs: Any) -> str:
+    def model_dump_json(self, *args: Any, **kwargs: Any) -> str:
         """
-        Override the default json() method to handle the case where version is not supplied.
+        Override the default model_dump_json() method to handle the case where version is not supplied.
         """
         if self.version is not_supplied:
-            return self.copy(update={"version": None}).json(*args, **kwargs)
-        return super().json(*args, **kwargs)
+            return self.model_copy(update={"version": None}).model_dump_json(
+                *args, **kwargs
+            )
+        return super().model_dump_json(*args, **kwargs)
 
 
 NoneArtifact = typing.cast(Artifact, object())

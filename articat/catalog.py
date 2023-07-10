@@ -228,7 +228,7 @@ class Catalog(ConfigMixin):
         """
         assert issubclass(model, Artifact)
         yield from (
-            model.parse_obj(r)
+            model.model_validate(r)
             for r in cls._lookup(
                 id=id,
                 partition_dt_start=partition_dt_start,
@@ -290,7 +290,7 @@ class Catalog(ConfigMixin):
 
         exclude = None if include_arbitrary else {"metadata": {"arbitrary": ...}}
         catalog_dicts = [
-            i.dict(exclude=exclude)
+            i.model_dump(exclude=exclude)
             for i in cls.lookup(dev=dev, limit=limit, model=Artifact)
         ]
         return pd.json_normalize(catalog_dicts, sep="_")
