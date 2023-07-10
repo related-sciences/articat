@@ -5,4 +5,4 @@ google-cloud-bigquery >= 1.11
 google-cloud-datastore >= 2.1
 jupyterlab ~= 3.0
 papermill >= 2.0
-pydantic ~= 1.8
+pydantic ~= 2.0
