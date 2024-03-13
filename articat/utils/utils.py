@@ -89,7 +89,9 @@ def download_artifact(artifact: FSArtifact, local_dir: PathType) -> str:
     prefix = artifact.main_dir
     # Note: glob results don't have fs scheme
     prefix_no_scheme = re.sub(FSArtifact._fs_scheme_regex, "", prefix)
-    to_copy = src_fs.glob(artifact.files_pattern)
+    # Root directory can be included in glob results if a trailing ** is used (which it often is)
+    # Don't include it in the list of files to copy, since we create it above when creating local_dir
+    to_copy = [f for f in src_fs.glob(artifact.files_pattern) if f != prefix]
     if len(to_copy) == 0:
         raise ValueError(f"Nothing to copy in `{artifact.files_pattern}`")
     for f in to_copy:
