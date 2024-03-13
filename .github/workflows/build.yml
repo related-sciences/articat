@@ -7,7 +7,6 @@ on:
       - main
   pull_request:
 
-
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -16,19 +15,19 @@ jobs:
         python-version: ["3.10"]
 
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
 
-    - uses: pre-commit/action@v3.0.0
+      - uses: pre-commit/action@v3.0.0
 
-    - uses: google-github-actions/setup-gcloud@v0
-    - name: Start GCP Datastore emulator
-      # NOTE: this emulator is used by the tests below
-      run: |
-        gcloud components install --quiet beta cloud-datastore-emulator
-        gcloud beta emulators datastore start --project foobar --host-port 127.0.0.1:8099 --consistency=1.0 --no-store-on-disk &
+      - uses: google-github-actions/setup-gcloud@v2
+      - name: Start GCP Datastore emulator
+        # NOTE: this emulator is used by the tests below
+        run: |
+          gcloud components install --quiet beta cloud-datastore-emulator
+          gcloud beta emulators datastore start --project foobar --host-port 127.0.0.1:8099 --consistency=1.0 --no-store-on-disk &
 
-    - run: pip install -r requirements.txt -r requirements-dev.txt
-    - run: pytest --color=yes --datastore_emulated
+      - run: pip install -r requirements.txt -r requirements-dev.txt
+      - run: pytest --color=yes --datastore_emulated
