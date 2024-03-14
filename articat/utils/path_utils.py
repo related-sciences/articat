@@ -28,9 +28,10 @@ def fsspec_copyfile(
     Like `shutil.copyfile` but with support for `fsspec` paths
     and compression.
     """
-    with fsspec.open(src, mode="rb", compression=src_compression) as fsrc, fsspec.open(
-        dst, mode="wb", compression=dst_compression
-    ) as fdst:
+    with (
+        fsspec.open(src, mode="rb", compression=src_compression) as fsrc,
+        fsspec.open(dst, mode="wb", compression=dst_compression) as fdst,
+    ):
         shutil.copyfileobj(fsrc, fdst, length=length)
 
 

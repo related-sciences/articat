@@ -15,7 +15,7 @@ ignore = [
     "F811",  # ignore redefinition of a function
     "B019",  # ignore functools cache/lru_cache
     "UP030", # allow explicit positional string formatting
-    ]
+]
 select = [
     "B",  # flake8-bugbear
     "C",  # flake8-comprehensions
