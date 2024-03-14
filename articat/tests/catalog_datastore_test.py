@@ -247,7 +247,7 @@ def test_catalog_to_df(uid: ID) -> None:
     TestFSArtifact.write_dummy_partitioned(uid, date.today())
     df = TestCatalog.to_dataframe()
     assert df.id.str.contains(uid).any()
-    assert any([c.startswith("metadata_arbitrary_") for c in df.columns])
+    assert any(c.startswith("metadata_arbitrary_") for c in df.columns)
 
     df_no_arb = TestCatalog.to_dataframe(include_arbitrary=False)
-    assert not any([c.startswith("metadata_arbitrary_") for c in df_no_arb.columns])
+    assert not any(c.startswith("metadata_arbitrary_") for c in df_no_arb.columns)

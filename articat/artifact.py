@@ -6,7 +6,7 @@ import typing
 from datetime import date, datetime
 from os import environ
 from types import TracebackType
-from typing import Any, ClassVar, TypeVar, Union
+from typing import Any, ClassVar, TypeVar
 
 from google.cloud import datastore
 from google.cloud.datastore.helpers import entity_to_protobuf
@@ -115,7 +115,7 @@ ID = str
 Version = str
 # NOTE: since `datetime` is also `date`, it's important that in
 #       the union `datetime` precedes `date`.
-Partition = Union[datetime, date]
+Partition = datetime | date
 EXECUTION_URL_ENV_NAME = "ARTICAT_EXECUTION_URL"
 """
 If this env variable is set, the value will be recorded inside the arbitrary

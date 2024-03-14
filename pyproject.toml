@@ -7,6 +7,8 @@ build-backend = "setuptools.build_meta"
 [tool.ruff]
 target-version = "py310"
 line-length = 88
+
+[tool.ruff.lint]
 ignore = [
     "E402",  # ignore import-at-top-of-file violations
     "E501",  # ignore line-length violations
@@ -25,7 +27,7 @@ select = [
     "W",  # pycode warnings
 ]
 
-[tool.ruff.mccabe]
+[tool.ruff.lint.mccabe]
 max-complexity = 20
 
 [tool.pytest.ini_options]
