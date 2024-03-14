@@ -7,6 +7,7 @@ from typing import Any, TypeVar
 
 from google.cloud import datastore
 from google.cloud.datastore import Client, Entity, Key
+from google.cloud.datastore.query import PropertyFilter
 
 from articat.artifact import ID, Artifact, Metadata, Partition, Version, not_supplied
 from articat.catalog import Catalog
@@ -91,28 +92,38 @@ class CatalogDatastore(Catalog):
                 and partition_dt_start == partition_dt_end
             ):
                 query.add_filter(
-                    "partition", "=", convert_to_datetime(partition_dt_start)
+                    filter=PropertyFilter(
+                        "partition", "=", convert_to_datetime(partition_dt_start)
+                    )
                 )
             else:
                 if partition_dt_start is not None:
                     query.add_filter(
-                        "partition", ">=", convert_to_datetime(partition_dt_start)
+                        filter=PropertyFilter(
+                            "partition", ">=", convert_to_datetime(partition_dt_start)
+                        )
                     )
                 if partition_dt_end is not None:
                     query.add_filter(
-                        "partition", "<", convert_to_datetime(partition_dt_end)
+                        filter=PropertyFilter(
+                            "partition", "<", convert_to_datetime(partition_dt_end)
+                        )
                     )
                 query.order = ["-partition"]
         if version is not not_supplied:
             # NOTE: version may be None here, and that's fine
-            query.add_filter("version", "=", version)
+            query.add_filter(filter=PropertyFilter("version", "=", version))
         if metadata is not None:
             if metadata.schema_fields:
                 for f in metadata.schema_fields:
-                    query.add_filter("metadata.schema_fields", "=", f)
+                    query.add_filter(
+                        filter=PropertyFilter("metadata.schema_fields", "=", f)
+                    )
             if metadata.arbitrary is not None:
                 for k, v in metadata.arbitrary.items():
-                    query.add_filter(f"metadata.arbitrary.{k}", "=", v)
+                    query.add_filter(
+                        filter=PropertyFilter(f"metadata.arbitrary.{k}", "=", v)
+                    )
         yield from query.fetch(limit)
 
     @classmethod
