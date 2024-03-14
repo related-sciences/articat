@@ -4,9 +4,9 @@ import tempfile
 import warnings
 from collections.abc import Mapping, Sequence
 from configparser import ConfigParser
-from enum import Enum
+from enum import StrEnum
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Type
+from typing import TYPE_CHECKING, Any
 
 from articat.utils.class_or_instance_method import class_or_instance_method
 
@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from articat.catalog import Catalog
 
 
-class ArticatMode(str, Enum):
+class ArticatMode(StrEnum):
     local = "local"
     gcp_datastore = "gcp_datastore"
     test = "test"
@@ -63,7 +63,7 @@ class ArticatConfig:
         cls,
         config_paths: Sequence[str] | None = None,
         config_dict: Mapping[str, Mapping[str, Any]] = {},
-    ) -> "Type[ArticatConfig]":
+    ) -> "type[ArticatConfig]":
         """
         Register configuration from config paths and config dictionary. Config
         paths are read in order, `config_dict` is applied after config paths.
@@ -96,7 +96,7 @@ class ArticatConfig:
         return ArticatMode(self._config.get("main", "mode", fallback=ArticatMode.local))
 
     @class_or_instance_method
-    def catalog(self) -> "Type[Catalog]":
+    def catalog(self) -> "type[Catalog]":
         """Returns the Catalog implementation for given mode"""
         if self.mode() == ArticatMode.local:
             from articat.catalog_local import CatalogLocal
