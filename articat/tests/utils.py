@@ -5,7 +5,7 @@ from contextlib import contextmanager
 from datetime import date, timedelta
 from functools import lru_cache
 from random import shuffle
-from typing import TYPE_CHECKING, ClassVar, Type, TypeVar
+from typing import TYPE_CHECKING, ClassVar, TypeVar
 
 import fsspec
 from google.cloud import datastore
@@ -45,7 +45,7 @@ class TestFSArtifactMixin(BASE_CLASS):
     _partition_str_format: ClassVar[str] = "%Y%m%dT%H%M%S%f"
 
     @classmethod
-    def _catalog(cls) -> "Type[Catalog]":
+    def _catalog(cls) -> "type[Catalog]":
         return TestCatalog
 
     @classmethod

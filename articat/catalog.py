@@ -26,8 +26,7 @@ class Catalog(ConfigMixin):
         *,
         version: Version | None,
         dev: bool = False,
-    ) -> Artifact:
-        ...
+    ) -> Artifact: ...
 
     @classmethod
     @overload
@@ -37,18 +36,15 @@ class Catalog(ConfigMixin):
         *,
         partition: Partition | None,
         dev: bool = False,
-    ) -> Artifact:
-        ...
+    ) -> Artifact: ...
 
     @classmethod
     @overload
-    def get(cls, id: ID, *, dev: bool = False) -> Artifact:
-        ...
+    def get(cls, id: ID, *, dev: bool = False) -> Artifact: ...
 
     @classmethod
     @overload
-    def get(cls, id: ID, *, model: type[T], dev: bool = False) -> T:
-        ...
+    def get(cls, id: ID, *, model: type[T], dev: bool = False) -> T: ...
 
     @classmethod
     @overload
@@ -60,8 +56,7 @@ class Catalog(ConfigMixin):
         version: Version | None = not_supplied,
         partition: Partition | None = None,
         dev: bool = False,
-    ) -> T:
-        ...
+    ) -> T: ...
 
     # NOTE: no return type due to: https://github.com/python/mypy/issues/3737
     @classmethod
@@ -123,13 +118,11 @@ class Catalog(ConfigMixin):
 
     @classmethod
     @overload
-    def latest_partition(cls, id: ID, *, dev: bool = False) -> Artifact:
-        ...
+    def latest_partition(cls, id: ID, *, dev: bool = False) -> Artifact: ...
 
     @classmethod
     @overload
-    def latest_partition(cls, id: ID, *, model: type[T], dev: bool = False) -> T:
-        ...
+    def latest_partition(cls, id: ID, *, model: type[T], dev: bool = False) -> T: ...
 
     # NOTE: no return type due to: https://github.com/python/mypy/issues/3737
     @classmethod
@@ -163,8 +156,7 @@ class Catalog(ConfigMixin):
         metadata: Metadata | None = None,
         limit: int | None = None,
         dev: bool = False,
-    ) -> Iterable[Artifact]:
-        ...
+    ) -> Iterable[Artifact]: ...
 
     @classmethod
     @overload
@@ -179,8 +171,7 @@ class Catalog(ConfigMixin):
         metadata: Metadata | None = None,
         limit: int | None = None,
         dev: bool = False,
-    ) -> Iterable[T]:
-        ...
+    ) -> Iterable[T]: ...
 
     # NOTE: no return type due to: https://github.com/python/mypy/issues/3737
     @classmethod

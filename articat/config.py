@@ -162,7 +162,8 @@ class ArticatConfig:
             r = tempfile.mkdtemp(suffix="artifact_temp_dir_")
             self._set_option(self._config, "fs", "tmp_prefix", r)
             warnings.warn(
-                f"FSArtifact temp directory not configured, assuming local mode, using temp directory: {r}"
+                f"FSArtifact temp directory not configured, assuming local mode, using temp directory: {r}",
+                stacklevel=1,
             )
             return r
 
@@ -175,7 +176,8 @@ class ArticatConfig:
             r = Path.cwd().joinpath(".articat_catalog", "dev").as_posix()
             self._set_option(self._config, "fs", "dev_prefix", r)
             warnings.warn(
-                f"FSArtifact development directory not configured, assuming local mode, using cwd: {r}"
+                f"FSArtifact development directory not configured, assuming local mode, using cwd: {r}",
+                stacklevel=1,
             )
             return r
 
@@ -188,7 +190,8 @@ class ArticatConfig:
             r = Path.cwd().joinpath(".articat_catalog", "prod").as_posix()
             self._set_option(self._config, "fs", "prod_prefix", r)
             warnings.warn(
-                f"FSArtifact production directory not configured, assuming local mode, using cwd: {r}"
+                f"FSArtifact production directory not configured, assuming local mode, using cwd: {r}",
+                stacklevel=1,
             )
             return r
 
