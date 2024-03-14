@@ -112,7 +112,7 @@ class CatalogDatastore(Catalog):
                 query.order = ["-partition"]
         if version is not not_supplied:
             # NOTE: version may be None here, and that's fine
-            query.add_filter("version", "=", version)
+            query.add_filter(filter=PropertyFilter("version", "=", version))
         if metadata is not None:
             if metadata.schema_fields:
                 for f in metadata.schema_fields:
