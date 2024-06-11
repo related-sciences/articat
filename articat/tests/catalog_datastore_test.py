@@ -13,6 +13,7 @@ from articat.tests.utils import (
     TestFSArtifact,
     write_a_couple_of_partitions,
 )
+from articat.catalog import MissingArtifactException
 
 # Tests in this module require Datastore emulator, and by default won't run
 # unless pytest has been told that the emulator is in fact available
@@ -234,12 +235,12 @@ def test_catalog_latest_partition(uid: ID) -> None:
 
 
 def test_catalog_get_nice_error_on_missing_get(uid: ID) -> None:
-    with pytest.raises(ValueError, match="Can't find requested artifact"):
+    with pytest.raises(MissingArtifactException, match="Can't find requested artifact"):
         TestCatalog.get(uid, version="0.1.1")
 
 
 def test_catalog_get_nice_error_on_missing_latest(uid: ID) -> None:
-    with pytest.raises(ValueError, match="Can't find requested artifact"):
+    with pytest.raises(MissingArtifactException, match="Can't find requested artifact"):
         TestCatalog.latest_partition(uid)
 
 
