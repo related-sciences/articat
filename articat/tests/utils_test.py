@@ -14,7 +14,6 @@ from articat.utils import utils
 from articat.utils.path_utils import cwd
 from articat.utils.typing import PathType
 from articat.utils.utils import download_artifact, dummy_unsafe_cache, get_repo_and_hash
-from articat.catalog import MissingArtifactException
 
 def get_source_path_that_looks_like_path_from_catalog() -> Path:
     p = Path(
