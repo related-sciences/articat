@@ -7,13 +7,13 @@ from _pytest.monkeypatch import MonkeyPatch
 from dateutil.tz import UTC
 
 from articat.artifact import EXECUTION_URL_ENV_NAME, ID, Metadata
+from articat.exceptions import MissingArtifactException
 from articat.fs_artifact import FSArtifact
 from articat.tests.utils import (
     TestCatalog,
     TestFSArtifact,
     write_a_couple_of_partitions,
 )
-from articat.catalog import MissingArtifactException
 
 # Tests in this module require Datastore emulator, and by default won't run
 # unless pytest has been told that the emulator is in fact available

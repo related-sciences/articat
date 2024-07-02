@@ -1,8 +1,10 @@
 import pytest
 
 from articat.catalog_local import CatalogLocal
-from articat.tests.utils import TestFSArtifact
-from articat.catalog import MissingArtifactException  # Ensure MissingArtifactException is imported
+from articat.exceptions import (
+    MissingArtifactException,  # Ensure MissingArtifactException is imported
+)
+
 
 def test_catalog_local_missing_artifact_exception():
     """
