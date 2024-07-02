@@ -7,6 +7,7 @@ from typing import Any, TypeVar, overload
 
 from articat.artifact import ID, Artifact, Metadata, Partition, Version, not_supplied
 from articat.config import ArticatConfig, ConfigMixin
+from articat.exceptions import MissingArtifactException
 
 logger = logging.getLogger(__name__)
 
@@ -114,7 +115,9 @@ class Catalog(ConfigMixin):
             )
         except StopIteration as e:
             req = {"id": id, "partition": partition, "version": version, "dev": dev}
-            raise ValueError(f"Can't find requested artifact {req}") from e
+            raise MissingArtifactException(
+                f"Can't find requested artifact {req}"
+            ) from e
 
     @classmethod
     @overload
@@ -142,7 +145,7 @@ class Catalog(ConfigMixin):
                 )
             )
         except StopIteration as e:
-            raise ValueError(f"Can't find requested artifact {id}") from e
+            raise MissingArtifactException(f"Can't find requested artifact {id}") from e
 
     @classmethod
     @overload
