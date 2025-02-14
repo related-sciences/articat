@@ -7,6 +7,7 @@ from _pytest.monkeypatch import MonkeyPatch
 from dateutil.tz import UTC
 
 from articat.artifact import EXECUTION_URL_ENV_NAME, ID, Metadata
+from articat.exceptions import MissingArtifactException
 from articat.fs_artifact import FSArtifact
 from articat.tests.utils import (
     TestCatalog,
@@ -234,12 +235,12 @@ def test_catalog_latest_partition(uid: ID) -> None:
 
 
 def test_catalog_get_nice_error_on_missing_get(uid: ID) -> None:
-    with pytest.raises(ValueError, match="Can't find requested artifact"):
+    with pytest.raises(MissingArtifactException, match="Can't find requested artifact"):
         TestCatalog.get(uid, version="0.1.1")
 
 
 def test_catalog_get_nice_error_on_missing_latest(uid: ID) -> None:
-    with pytest.raises(ValueError, match="Can't find requested artifact"):
+    with pytest.raises(MissingArtifactException, match="Can't find requested artifact"):
         TestCatalog.latest_partition(uid)
 
 
@@ -247,7 +248,7 @@ def test_catalog_to_df(uid: ID) -> None:
     TestFSArtifact.write_dummy_partitioned(uid, date.today())
     df = TestCatalog.to_dataframe()
     assert df.id.str.contains(uid).any()
-    assert any([c.startswith("metadata_arbitrary_") for c in df.columns])
+    assert any(c.startswith("metadata_arbitrary_") for c in df.columns)
 
     df_no_arb = TestCatalog.to_dataframe(include_arbitrary=False)
-    assert not any([c.startswith("metadata_arbitrary_") for c in df_no_arb.columns])
+    assert not any(c.startswith("metadata_arbitrary_") for c in df_no_arb.columns)

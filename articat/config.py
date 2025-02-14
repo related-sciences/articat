@@ -4,9 +4,9 @@ import tempfile
 import warnings
 from collections.abc import Mapping, Sequence
 from configparser import ConfigParser
-from enum import Enum
+from enum import StrEnum
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Type
+from typing import TYPE_CHECKING, Any
 
 from articat.utils.class_or_instance_method import class_or_instance_method
 
@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from articat.catalog import Catalog
 
 
-class ArticatMode(str, Enum):
+class ArticatMode(StrEnum):
     local = "local"
     gcp_datastore = "gcp_datastore"
     test = "test"
@@ -63,7 +63,7 @@ class ArticatConfig:
         cls,
         config_paths: Sequence[str] | None = None,
         config_dict: Mapping[str, Mapping[str, Any]] = {},
-    ) -> "Type[ArticatConfig]":
+    ) -> "type[ArticatConfig]":
         """
         Register configuration from config paths and config dictionary. Config
         paths are read in order, `config_dict` is applied after config paths.
@@ -96,7 +96,7 @@ class ArticatConfig:
         return ArticatMode(self._config.get("main", "mode", fallback=ArticatMode.local))
 
     @class_or_instance_method
-    def catalog(self) -> "Type[Catalog]":
+    def catalog(self) -> "type[Catalog]":
         """Returns the Catalog implementation for given mode"""
         if self.mode() == ArticatMode.local:
             from articat.catalog_local import CatalogLocal
@@ -162,7 +162,8 @@ class ArticatConfig:
             r = tempfile.mkdtemp(suffix="artifact_temp_dir_")
             self._set_option(self._config, "fs", "tmp_prefix", r)
             warnings.warn(
-                f"FSArtifact temp directory not configured, assuming local mode, using temp directory: {r}"
+                f"FSArtifact temp directory not configured, assuming local mode, using temp directory: {r}",
+                stacklevel=1,
             )
             return r
 
@@ -175,7 +176,8 @@ class ArticatConfig:
             r = Path.cwd().joinpath(".articat_catalog", "dev").as_posix()
             self._set_option(self._config, "fs", "dev_prefix", r)
             warnings.warn(
-                f"FSArtifact development directory not configured, assuming local mode, using cwd: {r}"
+                f"FSArtifact development directory not configured, assuming local mode, using cwd: {r}",
+                stacklevel=1,
             )
             return r
 
@@ -188,7 +190,8 @@ class ArticatConfig:
             r = Path.cwd().joinpath(".articat_catalog", "prod").as_posix()
             self._set_option(self._config, "fs", "prod_prefix", r)
             warnings.warn(
-                f"FSArtifact production directory not configured, assuming local mode, using cwd: {r}"
+                f"FSArtifact production directory not configured, assuming local mode, using cwd: {r}",
+                stacklevel=1,
             )
             return r
 

@@ -1,5 +1,6 @@
 fire >= 0.4
-fsspec >= 2021.7.0
+# See https://github.com/related-sciences/articat/pull/59
+fsspec >= 2021.7.0, < 2024.3.0
 gcsfs >= 2021.7.0
 google-cloud-bigquery >= 1.11
 google-cloud-datastore >= 2.1

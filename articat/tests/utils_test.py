@@ -44,14 +44,13 @@ def test_download__empty():
         download_artifact(a, dst)
 
 
-def test_download__weird_valid_pattern():
+def test_download__invalid_double_star():
     src = get_source_path_that_looks_like_path_from_catalog()
     src.joinpath("part-1").write_text("sth-2")
     a = TestFSArtifact(id="sth", files_pattern=f"{src}/**part-1")
     dst = Path(tempfile.mktemp())
-    r = download_artifact(a, dst)
-    assert dst.joinpath("part-1").read_text() == "sth-2"
-    assert r == f"{dst}/**part-1"
+    with pytest.raises(ValueError, match="Invalid pattern"):
+        download_artifact(a, dst)
 
 
 def test_download__weird_invalid_pattern():
