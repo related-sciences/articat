@@ -24,5 +24,5 @@ repos:
         args:
           ["--strict", "--show-error-codes", "--pretty", "--show-error-context"]
         additional_dependencies:
-          - pandas==1.5.2
-          - pydantic==1.10.4
+        - pandas==2.2.1
+        - pydantic>=2.0.0

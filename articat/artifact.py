@@ -10,7 +10,7 @@ from typing import Any, ClassVar, TypeVar
 
 from google.cloud import datastore
 from google.cloud.datastore.helpers import entity_to_protobuf
-from pydantic import BaseModel, Extra, validator
+from pydantic.v1 import BaseModel, Extra, validator
 
 from articat.config import ArticatConfig, ArticatMode, ConfigMixin
 from articat.utils.datetime_utils import convert_to_datetime
